@@ -28,6 +28,10 @@ const esRecogida = (pedido) => pedido.tipo_entrega === "recogida" || pedido.tipo
 
 const primerNombre = (pedido) => (pedido.nombre || "").trim().split(/\s+/)[0] || "";
 
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || "";
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "";
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "";
+
 export const sendEmailResend = async (to, subject, html, fromName) => {
   const { data, error } = await supabase.functions.invoke("send-email", {
     body: { to, subject, html, fromName },
@@ -55,6 +59,44 @@ export const sendEmailResend = async (to, subject, html, fromName) => {
   }
 
   return { sent: true };
+};
+
+export const sendEmail = async (to, subject, html, fromName) => {
+  // 1. Si EmailJS está configurado (método gratuito sin dominio), enviar via EmailJS
+  if (EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_ID && EMAILJS_PUBLIC_KEY) {
+    try {
+      const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          service_id: EMAILJS_SERVICE_ID,
+          template_id: EMAILJS_TEMPLATE_ID,
+          user_id: EMAILJS_PUBLIC_KEY,
+          template_params: {
+            to_email: to,
+            to_name: to,
+            subject: subject,
+            html_content: html,
+            message: html,
+            from_name: fromName,
+          },
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        console.warn("[EmailJS] Error:", res.status, err);
+        throw new Error(`EmailJS error: ${err}`);
+      }
+      return { sent: true };
+    } catch (err) {
+      console.error("[EmailJS] Falló envío:", err);
+      // Fallback a Supabase/Resend
+      return sendEmailResend(to, subject, html, fromName);
+    }
+  }
+
+  // 2. Fallback a Resend via Supabase Edge Function
+  return sendEmailResend(to, subject, html, fromName);
 };
 
 export const notificarCambioEstado = async (pedido, nuevoEstado) => {
@@ -98,12 +140,21 @@ export const notificarCambioEstado = async (pedido, nuevoEstado) => {
   const html = construirEmail({ ...contenido, pedido, negocio });
   const subject = `${contenido.asunto} · ${negocio.nombre}`;
 
-  return sendEmailResend(emailParaEnviar, subject, html, negocio.nombre);
+  return sendEmail(emailParaEnviar, subject, html, negocio.nombre);
 };
 
 // ── Plantillas de email por estado ────────────────────────────────────────────────────────
 
 const PLANTILLAS_EMAIL = {
+  nuevo: (p) => ({
+    asunto: `🎉 Pedido #${p.numero} recibido con éxito`,
+    color: "#ffcc00",
+    titulo: "¡Hemos recibido tu pedido!",
+    parrafos: [
+      `Confirmamos que recibimos tu pedido <strong>#${p.numero}</strong> correctamente.`,
+      "En breve iniciaremos su preparación. Te mantendremos informado sobre el estado de tu orden.",
+    ],
+  }),
   preparacion: (p) => ({
     asunto: `👨‍🍳 Estamos preparando tu pedido #${p.numero}`,
     color: "#d69e4a",

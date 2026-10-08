@@ -109,9 +109,9 @@ const normalizeSettings = (row) => {
 export const DEFAULT_PROMOTIONS_ITEMS = [
   {
     id: "promo-1",
-    titulo: "2x1 en Pavés Seleccionados",
+    titulo: "2x1 en Postre Seleccionados",
     tag: "Viernes & Sábados",
-    descripcion: "Lleva dos deliciosos Pavés de 8oz al precio de uno en sabores tradicionales.",
+    descripcion: "Lleva dos deliciosos Postre de 8oz al precio de uno en sabores tradicionales.",
     descuento: "2x1",
     imagen: "https://images.unsplash.com/photo-1587314168485-3236d6710814?w=500&auto=format&fit=crop&q=80",
   },
@@ -128,22 +128,22 @@ export const DEFAULT_PROMOTIONS_ITEMS = [
 export const DEFAULT_COMBOS_ITEMS = [
   {
     id: "combo-1",
-    nombre: "Combo Dúo Pavé + Torta",
+    nombre: "Combo Dúo Postre + Torta",
     precio: 32000,
     precioOriginal: 38000,
     badge: "Ahorra $6.000",
-    descripcion: "1 Pavé 8oz tradicional de Leche Klim + 1 Porción de Torta húmeda de chocolate con toppings.",
-    incluye: ["1x Pavé 8oz (Leche Klim)", "1x Torta húmeda de chocolate"],
+    descripcion: "1 Postre 8oz tradicional de Leche Klim + 1 Porción de Torta húmeda de chocolate con toppings.",
+    incluye: ["1x Postre 8oz (Leche Klim)", "1x Torta húmeda de chocolate"],
     imagen: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500&auto=format&fit=crop&q=80",
   },
   {
     id: "combo-2",
-    nombre: "Pack Familiar 4 Pavés",
+    nombre: "Pack Familiar 4 Postre",
     precio: 62000,
     precioOriginal: 72000,
     badge: "Más Popular 🔥",
-    descripcion: "4 Pavés de 8oz a elección, perfecto para compartir en familia o con amigos.",
-    incluye: ["4x Pavés 8oz a elección", "Cucharas y servilletas"],
+    descripcion: "4 Postre de 8oz a elección, perfecto para compartir en familia o con amigos.",
+    incluye: ["4x Postre 8oz a elección", "Cucharas y servilletas"],
     imagen: "https://images.unsplash.com/photo-1587314168485-3236d6710814?w=500&auto=format&fit=crop&q=80",
   },
 ];

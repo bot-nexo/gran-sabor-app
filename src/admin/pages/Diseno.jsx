@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useRef, useCallback, useMemo } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import Swal from "sweetalert2";
 import LoadingOverlay from "../../components/common/LoadingOverlay";
 import {
@@ -344,6 +344,9 @@ const Diseno = () => {
   const [previewMode, setPreviewMode] = useState("section");
   const [activeTab, setActiveTab] = useState("temas");
 
+  const timeOut = 1200;
+  const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const heroRef = useRef(null);
   const promosRef = useRef(null);
   const menuRef = useRef(null);
@@ -352,9 +355,14 @@ const Diseno = () => {
   const viewportRef = useRef(null);
 
   const cargarDatos = useCallback(async () => {
+    setCargando(true);
     try {
       const [d, prods, cats, sett] = await Promise.all([
-        getCatalogDesign(), getProducts(), getCategories(), getSettings(),
+        getCatalogDesign(),
+        getProducts(),
+        getCategories(),
+        getSettings(),
+        esperar(timeOut),
       ]);
       setForm(d || { ...DEFAULT_CATALOG_DESIGN });
       setProducts(prods || []);
@@ -411,7 +419,10 @@ const Diseno = () => {
     if (e) e.preventDefault();
     setGuardando(true);
     try {
-      await updateCatalogDesign(form);
+      await Promise.all([
+        updateCatalogDesign(form),
+        esperar(timeOut),
+      ]);
       Swal.fire({ icon: "success", title: "Diseno guardado!", text: "Cambios publicados en tiempo real.", confirmButtonColor: "#3D2314" });
     } catch (err) {
       Swal.fire({ title: "Error al guardar", text: err.message, icon: "error", confirmButtonColor: "#3D2314" });
@@ -420,7 +431,7 @@ const Diseno = () => {
     }
   };
 
-  if (cargando || !form) return <LoadingOverlay fullScreen text="Cargando estudio de diseno..." />;
+  if (cargando || !form) return <LoadingOverlay fullScreen text="Cargando estudio de diseno..." minTime={timeOut} />;
 
   const TABS = [
     { id: "temas", label: "Temas & Estilo", icon: Sparkles },
@@ -431,7 +442,7 @@ const Diseno = () => {
 
   return (
     <div className="admin-page admin-page--diseno">
-      {guardando && <LoadingOverlay text="Publicando diseno del catalogo..." />}
+      {guardando && <LoadingOverlay text="Publicando diseno del catalogo..." minTime={timeOut} />}
 
       <header className="admin-page__header">
         <div className="admin-page__header-title-wrap">

@@ -263,9 +263,9 @@ const Adiciones = () => {
 
       <header className="admin-page__header admin-page__header--row">
         <div>
-          <h1 className="admin-page__titulo">Arma tu Pavé & Extras</h1>
+          <h1 className="admin-page__titulo">Adiciones & Salsas</h1>
           <p className="admin-page__sub">
-            Gestiona los extras de los productos y los elementos para "Arma tu Pavé".
+            Gestiona los extras de los productos y los elementos para tus productos.
           </p>
         </div>
         <div className="admin-page__acciones">

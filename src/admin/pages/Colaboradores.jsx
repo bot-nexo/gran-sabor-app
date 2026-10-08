@@ -32,10 +32,17 @@ const Colaboradores = () => {
   const [cargando, setCargando] = useState(false);
   const [procesandoId, setProcesandoId] = useState(null);
 
+  const timeOut = 1200;
+  const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const cargar = useCallback(async () => {
     setCargando(true);
     try {
-      setLista(await getColaboradores());
+      const [res] = await Promise.all([
+        getColaboradores(),
+        esperar(timeOut)
+      ]);
+      setLista(res);
     } catch (e) {
       avisarError(e, "Error al cargar");
       setLista([]);
@@ -78,7 +85,10 @@ const Colaboradores = () => {
 
     setCargando(true);
     try {
-      await manageCollaborator("create", res.value);
+      await Promise.all([
+        manageCollaborator("create", res.value),
+        esperar(timeOut)
+      ]);
       await cargar();
       Swal.fire({
         icon: "success",
@@ -94,12 +104,17 @@ const Colaboradores = () => {
 
   const ejecutar = async (id, fn) => {
     setProcesandoId(id);
+    setCargando(true);
     try {
-      await fn();
+      await Promise.all([
+        fn(),
+        esperar(timeOut)
+      ]);
     } catch (e) {
       avisarError(e);
     } finally {
       setProcesandoId(null);
+      setCargando(false);
     }
   };
 
@@ -138,11 +153,11 @@ const Colaboradores = () => {
     });
   };
 
-  if (lista === null) return <LoadingOverlay fullScreen text="Cargando colaboradores" minTime={800} />;
+  if (lista === null) return <LoadingOverlay fullScreen text="Cargando colaboradores" minTime={timeOut} />;
 
   return (
     <div className="admin-page">
-      {cargando && <LoadingOverlay text="Sincronizando colaboradores" minTime={800} />}
+      {cargando && <LoadingOverlay text="Sincronizando colaboradores" minTime={timeOut} />}
 
       <header className="admin-page__header admin-page__header--row">
         <div>

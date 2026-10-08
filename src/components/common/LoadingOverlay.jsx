@@ -1,17 +1,17 @@
-
 import { useState, useEffect } from "react";
 import "./LoadingOverlay.css";
 
 /**
  * @param {string} text - Texto descriptivo opcional.
- * @param {number} minTime - Tiempo mínimo en milisegundos para mostrar el loader (por defecto 2s).
+ * @param {number} minTime - Tiempo mínimo en milisegundos para mostrar el loader (por defecto 1s).
+ * @param {object} settings - Objeto opcional de configuración de empresa.
  */
 const LoadingOverlay = ({
   text = "Cargando...",
   minTime = 1000,
   settings = null
 }) => {
-  const logoSrc = "/logo.png";
+
   const [mostrar, setMostrar] = useState(true);
 
   useEffect(() => {
@@ -19,47 +19,37 @@ const LoadingOverlay = ({
       setMostrar(false);
     }, minTime);
 
-    return () => clearTimeout(timer); // Limpia el temporizador si el componente se desmonta antes
+    return () => clearTimeout(timer);
   }, [minTime]);
 
   if (!mostrar) return null;
 
-  //********************************** */
   return (
-    <div id="pm-loader" className="pm-loader-wrapper">
-      <div className="pm-backdrop">
-        <div className="pm-nebula pm-nebula-gold"></div>
-        <div className="pm-nebula pm-nebula-pink"></div>
-      </div>
+    <div className="app-loader-overlay">
+      <div className="app-loader-backdrop" />
 
-      <div className="pm-center">
-        <div className="pm-rings-container">
-          <div className="pm-conic-ring"></div>
-          <div className="pm-pulse-ring"></div>
-          <div className="pm-orbit-satellite"></div>
+      <div className="app-loader-content">
+        <div className="app-loader-spinner-ring">
+          {/*<div className="app-loader-logo-wrap">
+             <img src={logoSrc} alt="Logo" className="app-loader-logo" /> 
+          </div>*/}
         </div>
 
-        <div className="pm-emblem-wrap">
-          <div className="pm-sheen-layer"></div>
-
-          <img src={logoSrc} alt="" className="pm-badge-img" />
-          <div className="pm-glint pm-glint-1">✦</div>
-          <div className="pm-glint pm-glint-2">✦</div>
+        <div className="app-loader-info">
+          <h1 className="app-loader-title">
+            {settings?.razonSocial?.toUpperCase() || "Nexo Menú"}
+          </h1>
         </div>
 
-        <div className="pm-brand-info">
-          <h1 className="pm-title">{settings?.razonSocial?.toUpperCase() || "BIENVENIDO"}</h1>
-        </div>
-
-        <div className="pm-progress-container">
-          <div className="pm-track">
-            <div className="pm-fill"></div>
+        <div className="app-loader-progress">
+          <div className="app-loader-track">
+            <div className="app-loader-bar" />
           </div>
-          <div className="pm-status-row">
-            <span className="pm-status-label">{text}
-              <span className="pm-dots-indicator"><span>•</span><span>•</span><span>•</span><span>•</span></span>
-            </span>
-          </div>
+          <p className="app-loader-status">
+            {/* {text} */}
+            Cargando ...
+
+          </p>
         </div>
       </div>
     </div>
@@ -67,4 +57,3 @@ const LoadingOverlay = ({
 };
 
 export default LoadingOverlay;
-

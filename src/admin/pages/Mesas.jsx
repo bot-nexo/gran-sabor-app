@@ -18,10 +18,17 @@ const Mesas = () => {
   const [cargando, setCargando] = useState(false);
   const [procesandoId, setProcesandoId] = useState(null);
 
+  const timeOut = 1200;
+  const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const cargar = useCallback(async () => {
     setCargando(true);
     try {
-      setMesas(await getMesas());
+      const [data] = await Promise.all([
+        getMesas(),
+        esperar(timeOut)
+      ]);
+      setMesas(data);
     } catch (e) {
       Swal.fire({ title: "Error al cargar", text: e.message, icon: "error", confirmButtonColor: COLOR });
       setMesas([]);
@@ -57,7 +64,10 @@ const Mesas = () => {
 
     setCargando(true);
     try {
-      await createMesas(Array.from({ length: res.value }, (_, i) => siguiente + i));
+      await Promise.all([
+        createMesas(Array.from({ length: res.value }, (_, i) => siguiente + i)),
+        esperar(timeOut)
+      ]);
       await cargar();
     } catch (e) {
       setCargando(false);
@@ -67,13 +77,18 @@ const Mesas = () => {
 
   const toggleActiva = async (m) => {
     setProcesandoId(m.id);
+    setCargando(true);
     try {
-      await updateMesa(m.id, { activa: !m.activa });
+      await Promise.all([
+        updateMesa(m.id, { activa: !m.activa }),
+        esperar(timeOut)
+      ]);
       setMesas((prev) => prev.map((x) => (x.id === m.id ? { ...x, activa: !m.activa } : x)));
     } catch (e) {
       Swal.fire({ title: "No se pudo actualizar", text: e.message, icon: "error", confirmButtonColor: COLOR });
     } finally {
       setProcesandoId(null);
+      setCargando(false);
     }
   };
 
@@ -91,13 +106,18 @@ const Mesas = () => {
     });
     if (!res.isConfirmed) return;
     setProcesandoId(m.id);
+    setCargando(true);
     try {
-      await deleteMesa(m.id);
+      await Promise.all([
+        deleteMesa(m.id),
+        esperar(timeOut)
+      ]);
       setMesas((prev) => prev.filter((x) => x.id !== m.id));
     } catch (e) {
       Swal.fire({ title: "No se pudo eliminar", text: e.message, icon: "error", confirmButtonColor: COLOR });
     } finally {
       setProcesandoId(null);
+      setCargando(false);
     }
   };
 
@@ -147,11 +167,11 @@ const Mesas = () => {
     w.onload = () => w.print();
   };
 
-  if (mesas === null) return <LoadingOverlay fullScreen text="Cargando mesas" minTime={800} />;
+  if (mesas === null) return <LoadingOverlay fullScreen text="Cargando mesas" minTime={timeOut} />;
 
   return (
     <div className="admin-page">
-      {cargando && <LoadingOverlay text="Sincronizando mesas" minTime={800} />}
+      {cargando && <LoadingOverlay text="Sincronizando mesas" minTime={timeOut} />}
 
       <header className="admin-page__header admin-page__header--row">
         <div>

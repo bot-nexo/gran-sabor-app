@@ -26,6 +26,7 @@ import useCart from "./hooks/useCart";
 import useCatalog from "./hooks/useCatalog";
 
 import { createLocalOrder, createOrder, getMesaActiva, getOrCreateCustomer, incrementCustomerOrderCount } from "./data/dataSource";
+import { sendOrderConfirmationEmail } from "./services/emailService";
 import { resolveCustomerBadge } from "./utils/badges";
 import { estaAbiertoSegunHorario } from "./utils/horario";
 import {
@@ -265,6 +266,15 @@ const App = () => {
       total: summary.totalNeto,
       deliveryMeta: deliveryData.deliveryMeta || null,
     });
+
+    // Envío asíncrono de confirmación por correo electrónico (EmailJS)
+    sendOrderConfirmationEmail({
+      orderData,
+      cart,
+      summary,
+      savedOrder: saved,
+      settings,
+    }).catch((err) => console.warn("[App] Error enviando email de confirmación:", err));
 
     // Incrementa el contador de compras concretadas del cliente en la BD real de Supabase
     if (deliveryData.telefono) {

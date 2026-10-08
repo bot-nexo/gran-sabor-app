@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Navigation, MapPin, Save } from "lucide-react";
+import { Navigation, MapPin, Save, RefreshCw } from "lucide-react";
 import Swal from "sweetalert2";
 import { getSettings, updateSettings } from "../../data/dataSource";
 import { formatCOP } from "../../utils/price";
@@ -11,10 +11,16 @@ const Domicilios = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const timeOut = 1200;
+  const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const loadSettings = async () => {
     setLoading(true);
     try {
-      const s = await getSettings();
+      const [s] = await Promise.all([
+        getSettings(),
+        esperar(timeOut)
+      ]);
       setForm({
         dynamicDeliveryEnabled: s.dynamicDeliveryEnabled === true,
         storeLat: s.storeLat ?? "",
@@ -55,7 +61,10 @@ const Domicilios = () => {
         throw new Error("Si activas el cálculo por distancia, debes ingresar latitud y longitud.");
       }
 
-      await updateSettings(payload);
+      await Promise.all([
+        updateSettings(payload),
+        esperar(timeOut)
+      ]);
 
       Swal.fire({
         icon: "success",
@@ -76,13 +85,13 @@ const Domicilios = () => {
   };
 
   if (loading || !form) {
-    return <LoadingOverlay fullScreen text="Cargando logística" />;
+    return <LoadingOverlay fullScreen text="Cargando logística y envíos..." minTime={timeOut} />;
   }
 
   //********************* */
   return (
     <div className="admin-page" style={{ position: "relative" }}>
-      {saving && <LoadingOverlay text="Guardando..." />}
+      {saving && <LoadingOverlay text="Guardando configuración..." minTime={timeOut} />}
 
       <header className="admin-page__header" style={{ display: "flex", justifyContent: "space-between" }}>
         <div >
@@ -93,9 +102,14 @@ const Domicilios = () => {
             Configura el cálculo dinámico de domicilios por distancia y Mapbox.
           </p>
         </div>
-        <button type="submit" form="domicilios-form" className="admin-btn-primary">
-          <Save size={18} /> Guardar
-        </button>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+          <button type="button" className="admin-btn-ghost" onClick={loadSettings} disabled={loading}>
+            <RefreshCw size={15} className={loading ? "adm-spin" : ""} /> Recargar
+          </button>
+          <button type="submit" form="domicilios-form" className="admin-btn-primary">
+            <Save size={18} /> Guardar
+          </button>
+        </div>
       </header>
 
       <div className="admin-main-content">

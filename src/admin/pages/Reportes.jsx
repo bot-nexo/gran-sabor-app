@@ -37,9 +37,13 @@ const fechaLocal = (d) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 const Reportes = () => {
+  const [cargandoInicial, setCargandoInicial] = useState(true);
   const [cargando, setCargando] = useState(true);
   const [pedidosRaw, setPedidosRaw] = useState([]);
   const [productosRaw, setProductosRaw] = useState([]);
+
+  const timeOut = 1200;
+  const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
   // Filtros de fecha (arranca en "Este Mes" para no descargar todo el historial al entrar)
   const [preset, setPreset] = useState("mes");
@@ -61,7 +65,8 @@ const Reportes = () => {
     try {
       const [ordersData, productsData] = await Promise.all([
         getOrdersByRange(fechaInicio, fechaFin),
-        getProducts()
+        getProducts(),
+        esperar(timeOut),
       ]);
       // Ignorar respuestas de un rango anterior si el usuario ya cambió el filtro
       if (cargaId !== cargaIdRef.current) return;
@@ -77,7 +82,10 @@ const Reportes = () => {
         confirmButtonColor: "#3D2314"
       });
     } finally {
-      if (cargaId === cargaIdRef.current) setCargando(false);
+      if (cargaId === cargaIdRef.current) {
+        setCargando(false);
+        setCargandoInicial(false);
+      }
     }
   };
 
@@ -304,8 +312,13 @@ const Reportes = () => {
 
   const DIAS_NOMBRES = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
+  if (cargandoInicial) {
+    return <LoadingOverlay fullScreen text="Cargando reportes e informes..." minTime={timeOut} />;
+  }
+
   return (
-    <div className="rep-container" ref={reportRef}>
+    <div className="rep-container" ref={reportRef} style={{ position: "relative" }}>
+      {cargando && <LoadingOverlay text="Procesando analíticas de negocio..." minTime={timeOut} />}
 
       {/* HEADER DE LA PÁGINA */}
       <div className="rep-header no-print">
@@ -399,25 +412,19 @@ const Reportes = () => {
         </button>
       </div>
 
-      {cargando ? (
-        <div style={{ padding: "4rem 0", textAlign: "center" }}>
-          <LoadingOverlay text="Procesando analíticas de negocio..." minTime={500} />
+      {/* HEADER IMPRIMIBLE (SOLO VISIBLE EN IMPRESIÓN / PDF) */}
+      <div className="rep-print-header printable-only">
+        <div className="rep-print-brand">
+          <h2>INFORME GERENCIAL Y CIERRE DE VENTAS</h2>
+          <p>Generado el: {new Date().toLocaleString("es-CO")}</p>
         </div>
-      ) : (
-        <>
-          {/* HEADER IMPRIMIBLE (SOLO VISIBLE EN IMPRESIÓN / PDF) */}
-          <div className="rep-print-header printable-only">
-            <div className="rep-print-brand">
-              <h2>INFORME GERENCIAL Y CIERRE DE VENTAS</h2>
-              <p>Generado el: {new Date().toLocaleString("es-CO")}</p>
-            </div>
-            <div className="rep-print-meta">
-              <p><strong>Período:</strong> {fechaInicio || "Inicio"} al {fechaFin || "Hoy"}</p>
-              <p><strong>Total Registros:</strong> {pedidosFiltrados.length} pedidos</p>
-            </div>
-          </div>
+        <div className="rep-print-meta">
+          <p><strong>Período:</strong> {fechaInicio || "Inicio"} al {fechaFin || "Hoy"}</p>
+          <p><strong>Total Registros:</strong> {pedidosFiltrados.length} pedidos</p>
+        </div>
+      </div>
 
-          {/* ────────────────────────────────────────────────────────────────────────── */}
+      {/* ────────────────────────────────────────────────────────────────────────── */}
           {/* VISTA 1: VENTAS & CIERRE FINANCIERO */}
           {/* ────────────────────────────────────────────────────────────────────────── */}
           {(tipoReporte === "financiero" || window.matchMedia("print").matches) && (
@@ -705,9 +712,6 @@ const Reportes = () => {
 
             </div>
           )}
-
-        </>
-      )}
 
     </div>
   );

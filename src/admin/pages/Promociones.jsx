@@ -28,7 +28,7 @@ const newCombo = () => ({
   precioOriginal: 42000,
   badge: "Ahorra $7.000",
   descripcion: "Combinación de postres para compartir.",
-  incluye: ["1x Pavé 8oz", "1x Bebida o Torta"],
+  incluye: ["1x Postre 8oz", "1x Bebida o Torta"],
   imagen: "",
 });
 
@@ -144,7 +144,7 @@ const ComboCard = ({ combo, idx, onChange, onRemove }) => {
         <div style={{ padding: ".85rem 1rem", display: "flex", flexDirection: "column", gap: ".6rem" }}>
           <label className="admin-field" style={{ marginBottom: 0 }}>
             <span className="admin-field__label" style={{ fontSize: ".72rem" }}>Nombre del Combo</span>
-            <input type="text" value={combo.nombre || ""} onChange={(e) => onChange(idx, "nombre", e.target.value)} className="admin-field__input" placeholder="Combo Dúo Pavé + Torta" style={{ fontWeight: 700 }} />
+            <input type="text" value={combo.nombre || ""} onChange={(e) => onChange(idx, "nombre", e.target.value)} className="admin-field__input" placeholder="Combo Dúo Postre + Torta" style={{ fontWeight: 700 }} />
           </label>
           <div className="combo-editor__prices">
             <label className="admin-field" style={{ marginBottom: 0 }}>
@@ -171,7 +171,7 @@ const ComboCard = ({ combo, idx, onChange, onRemove }) => {
               value={Array.isArray(combo.incluye) ? combo.incluye.join(", ") : (combo.incluye || "")}
               onChange={(e) => onChange(idx, "incluye", e.target.value)}
               className="admin-field__input"
-              placeholder="1x Pavé 8oz, 1x Torta de chocolate"
+              placeholder="1x Postre 8oz, 1x Torta de chocolate"
               style={{ fontSize: ".8rem" }}
             />
           </label>
@@ -194,9 +194,16 @@ const PromocionesAdmin = () => {
   const [guardando, setGuardando] = useState(false);
   const [activeSection, setActiveSection] = useState("promos");
 
+  const timeOut = 1200;
+  const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
   const cargarDatos = useCallback(async () => {
+    setCargando(true);
     try {
-      const d = await getCatalogDesign();
+      const [d] = await Promise.all([
+        getCatalogDesign(),
+        esperar(timeOut)
+      ]);
       setForm(d || { ...DEFAULT_CATALOG_DESIGN });
     } catch (e) {
       Swal.fire({ title: "Error al cargar", text: e.message, icon: "error", confirmButtonColor: "#3D2314" });
@@ -224,7 +231,10 @@ const PromocionesAdmin = () => {
         })) || []
       };
 
-      await updateCatalogDesign(sanitizedForm);
+      await Promise.all([
+        updateCatalogDesign(sanitizedForm),
+        esperar(timeOut)
+      ]);
       Swal.fire({ toast: true, position: "top-end", icon: "success", title: "¡Cambios guardados en tiempo real!", showConfirmButton: false, timer: 1800 });
     } catch (err) {
       Swal.fire({ title: "No se pudo guardar", text: err.message, icon: "error", confirmButtonColor: "#3D2314" });
@@ -249,7 +259,7 @@ const PromocionesAdmin = () => {
     setForm((prev) => ({ ...prev, combosItems: (prev.combosItems || []).filter((_, i) => i !== idx) }));
   };
 
-  if (cargando || !form) return <LoadingOverlay fullScreen text="Cargando módulo de Promociones…" />;
+  if (cargando || !form) return <LoadingOverlay fullScreen text="Cargando módulo de Promociones…" minTime={timeOut} />;
 
   const TABS = [
     { id: "promos", label: "Promociones", mobileLabel: "Promos", icon: Tag, color: "#ffcc00" },
@@ -259,7 +269,7 @@ const PromocionesAdmin = () => {
 
   return (
     <div className="admin-page admin-page--promociones">
-      {guardando && <LoadingOverlay text="Guardando cambios…" />}
+      {guardando && <LoadingOverlay text="Guardando cambios…" minTime={timeOut} />}
 
       <header className="admin-page__header">
         <div className="admin-page__header-title-wrap">
