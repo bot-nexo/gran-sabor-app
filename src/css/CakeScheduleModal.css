@@ -1,0 +1,230 @@
+.cake-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .cake-modal-overlay {
+    align-items: center;
+  }
+}
+
+.cake-modal-content {
+  background-color: #1a1a1a;
+  border-radius: 24px 24px 0 0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .cake-modal-content {
+    border-radius: 24px;
+    max-height: 85vh;
+  }
+}
+
+.cake-modal-hero {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  flex-shrink: 0;
+  background-color: #000;
+}
+
+.cake-modal-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.8;
+}
+
+.cake-modal-hero-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to top, #1a1a1a 0%, transparent 100%);
+}
+
+.cake-modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.2s;
+}
+
+.cake-modal-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.cake-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cake-modal-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.cake-modal-desc {
+  color: #aaa;
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+
+.cake-modal-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #ffcc00;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Date Picker Native Input */
+.cake-date-picker-container {
+  display: flex;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.cake-date-input {
+  width: 100%;
+  padding: 14px 16px;
+  background-color: #222;
+  border: 1.5px solid #333;
+  border-radius: 12px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.cake-date-input:focus {
+  border-color: #ffcc00;
+  background-color: rgba(255, 204, 0, 0.05);
+}
+
+.cake-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1) sepia(1) saturate(5) hue-rotate(350deg);
+  cursor: pointer;
+}
+
+/* Time Slots */
+.cake-time-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.cake-time-slot {
+  background: #222;
+  border: 1.5px solid #333;
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+  color: #ddd;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cake-time-slot:hover {
+  border-color: #ffcc00;
+}
+
+.cake-time-slot--active {
+  background: rgba(255, 204, 0, 0.15);
+  border-color: #ffcc00;
+  color: #ffcc00;
+}
+
+.cake-modal-footer {
+  padding: 20px;
+  background: #1a1a1a;
+  border-top: 1px solid #333;
+  display: flex;
+  gap: 15px;
+}
+
+.cake-btn-cancel {
+  flex: 1;
+  background: transparent;
+  border: 1px solid #555;
+  color: #ddd;
+  border-radius: 12px;
+  font-weight: 600;
+  padding: 14px 0;
+  cursor: pointer;
+}
+
+.cake-btn-confirm {
+  flex: 2;
+  background: #ffcc00;
+  border: none;
+  color: #111;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding: 14px 0;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);
+  transition: transform 0.1s;
+}
+.cake-btn-confirm:active {
+  transform: scale(0.98);
+}
+.cake-btn-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

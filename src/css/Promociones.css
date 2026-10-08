@@ -1,0 +1,306 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   PROMOTION CAROUSEL — Carrusel Horizontal Compacto de Ofertas (No Invasivo)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.promotions-section {
+  padding: 2.25rem 0 1.75rem;
+  background-color: var(--promos-bg, #fff8f8);
+  transition: background-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(61, 35, 20, 0.05);
+}
+
+.promotions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+}
+
+.promotions-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.promotions-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  background: rgba(255, 204, 0, 0.12);
+  border: 1px solid rgba(255, 204, 0, 0.3);
+  color: var(--promos-accent, #ffcc00);
+  font-size: 0.74rem;
+  font-weight: 800;
+  width: fit-content;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.promotions-title {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--text-primary, #fdfbf7);
+  letter-spacing: -0.02em;
+  margin: 0;
+  font-family: var(--menu-font, "Outfit", "Montserrat", sans-serif);
+}
+
+.promotions-subtitle {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-muted, #bda899);
+  margin: 0;
+}
+
+/* Controles de navegación del carrusel */
+.carousel-nav-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.carousel-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.carousel-dot--active {
+  width: 20px;
+  background: var(--promos-accent, #ffcc00);
+}
+
+.carousel-nav-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.carousel-nav-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary, #fdfbf7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.carousel-nav-btn:hover {
+  background: var(--promos-accent, #ffcc00);
+  color: #120a06;
+  border-color: var(--promos-accent, #ffcc00);
+  transform: scale(1.05);
+}
+
+.carousel-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  background: #ffffff;
+  color: #a89a8c;
+}
+
+/* Pista deslizante (Horizontal Scroll con Snap) */
+.promotions-carousel-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 0.4rem 0.5rem 0.9rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+}
+
+.promotions-carousel-track::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
+/* Tarjeta compacta tipo banner horizontal (altura reducida ~145px) */
+.promo-card--compact {
+  scroll-snap-align: start;
+  flex: 0 0 320px;
+  max-width: 340px;
+  height: 145px;
+  border-radius: 16px;
+  background-color: var(--promos-card-bg, #1f140e);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  display: flex;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.promo-card--compact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 204, 0, 0.3);
+}
+
+.promo-card__media {
+  position: relative;
+  width: 120px;
+  height: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background-color: #120a06;
+}
+
+.promo-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.promo-card--compact:hover .promo-card__img {
+  transform: scale(1.06);
+}
+
+.promo-card__discount-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--promos-accent, #ffcc00);
+  color: #120a06;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.promo-card__body {
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0; /* Para permitir ellipsis */
+}
+
+.promo-card__tag {
+  font-size: 0.66rem;
+  font-weight: 800;
+  color: var(--promos-accent, #ffcc00);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.promo-card__title {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--text-primary, #fdfbf7);
+  line-height: 1.25;
+  margin: 0.2rem 0 0.15rem 0;
+  font-family: var(--menu-font, "Outfit", "Montserrat", sans-serif);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.promo-card__desc {
+  font-size: 0.75rem;
+  color: var(--text-muted, #bda899);
+  line-height: 1.3;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.promo-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+  background: var(--promos-accent, #d92b38);
+  color: #ffffff;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  width: fit-content;
+  margin-top: 0.3rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.promo-card__cta:hover {
+  opacity: 0.92;
+  transform: translateX(2px);
+}
+
+@media (max-width: 640px) {
+  .promotions-section {
+    padding: 1.75rem 0 1.25rem;
+  }
+  .promotions-title {
+    font-size: 1.25rem;
+  }
+  .promotions-subtitle {
+    display: none; /* Ahorra espacio vertical en móviles */
+  }
+  .promo-card--compact {
+    flex: 0 0 280px;
+    height: 135px;
+  }
+  .promo-card--media {
+    width: 105px;
+  }
+}
+
+/* Barra de progreso de autoplay continuo (igual que Destacados) */
+.carousel-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(61, 35, 20, 0.06);
+}
+
+.carousel-progress-fill {
+  height: 100%;
+  background: var(--promos-accent, #d92b38);
+  transition: width 0.05s linear;
+}
+
+.promo-card--active {
+  border-color: rgba(217, 43, 56, 0.35);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+

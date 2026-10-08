@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cargando...</title>
+  <script>
+    // Lee el nombre del negocio guardado localmente para que aparezca desde el primer instante
+    var storedName = localStorage.getItem("store_razon_social");
+    if (storedName) {
+      document.title = storedName;
+    } else {
+      document.title = "Gran Sabor | Menú Digital";
+    }
+  </script>
+  <meta name="description"
+    content="Menú digital interactivo de demostración: postres, café de especialidad y gastronomía artesanal." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Poppins:wght@300;400;600;700&display=swap"
+    rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>

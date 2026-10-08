@@ -1,0 +1,291 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   CUSTOMER IDENTIFY MODAL — Modal Gourmet para Identificación de Cliente
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.customer-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(13, 8, 5, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.customer-modal-card {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: linear-gradient(145deg, #180e0a 0%, #120a06 100%);
+  border: 1.5px solid rgba(255, 204, 0, 0.35);
+  border-radius: 28px;
+  padding: 2rem 1.75rem 1.75rem;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 204, 0, 0.15);
+  animation: scaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.customer-modal-close-btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fdfbf7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.customer-modal-close-btn:hover {
+  background: rgba(255, 204, 0, 0.2);
+  color: #ffcc00;
+  border-color: rgba(255, 204, 0, 0.4);
+}
+
+.customer-modal-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.customer-modal-icon-badge {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 204, 0, 0.2) 0%, rgba(22, 13, 8, 0.9) 100%);
+  border: 1.5px solid #ffcc00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(255, 204, 0, 0.3);
+}
+
+.customer-modal-title {
+  font-family: "Outfit", "Montserrat", sans-serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.customer-modal-subtitle {
+  font-size: 0.84rem;
+  color: #d8c8bd;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.customer-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.customer-modal-error {
+  background: rgba(217, 43, 56, 0.15);
+  border: 1px solid rgba(217, 43, 56, 0.4);
+  color: #ff8080;
+  padding: 0.65rem 0.85rem;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.customer-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.customer-field-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #ffcc00;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.customer-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.customer-input-icon {
+  position: absolute;
+  left: 1rem;
+  color: #bda899;
+}
+
+.customer-input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 2.8rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+.customer-input:focus {
+  border-color: #ffcc00;
+  box-shadow: 0 0 14px rgba(255, 204, 0, 0.25);
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.customer-field-hint {
+  font-size: 0.72rem;
+  color: #9e8a7c;
+  line-height: 1.35;
+  margin-top: 0.15rem;
+}
+
+.customer-submit-btn {
+  width: 100%;
+  padding: 0.9rem;
+  border-radius: 999px;
+  background: #ffcc00;
+  color: #120a06;
+  font-family: "Outfit", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 6px 20px rgba(255, 204, 0, 0.35);
+  transition: all 0.25s ease;
+  margin-top: 0.5rem;
+}
+
+.customer-submit-btn:hover {
+  background: #ffd633;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(255, 204, 0, 0.5);
+}
+
+.customer-submit-btn:active {
+  transform: translateY(0);
+}
+
+.customer-skip-btn {
+  width: 100%;
+  padding: 0.65rem;
+  background: transparent;
+  border: none;
+  color: #bda899;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+  margin-top: 0.25rem;
+  text-align: center;
+}
+
+.customer-skip-btn:hover {
+  color: #ffcc00;
+}
+
+.customer-registered-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  color: #34d399;
+  padding: 0.75rem 0.95rem;
+  border-radius: 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.customer-welcome-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1.5px solid rgba(16, 185, 129, 0.4);
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  color: #ffffff;
+  margin-bottom: 0.5rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.customer-welcome-banner h4 {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #34d399;
+}
+
+.customer-welcome-banner p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #d1fae5;
+}
+
+.customer-phone-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 204, 0, 0.1);
+  border: 1px dashed rgba(255, 204, 0, 0.35);
+  padding: 0.5rem 0.85rem;
+  border-radius: 12px;
+  color: #ffcc00;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.customer-phone-change-btn {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.customer-phone-change-btn:hover {
+  color: #ffcc00;
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+

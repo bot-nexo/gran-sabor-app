@@ -1,0 +1,67 @@
+button.scroll-to-top-btn {
+  position: fixed;
+  bottom: 85px;
+  right: 15px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 24px;
+  background-color: rgba(255, 204, 0, 0.9);
+  color: #120a06;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+button.scroll-to-top-btn.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+button.scroll-to-top-btn:active {
+  transform: translateY(2px) scale(0.95);
+}
+
+button.scroll-to-top-btn .scroll-icon {
+  margin-bottom: -4px;
+}
+
+button.scroll-to-top-btn span.scroll-hint {
+  font-size: 0.35rem;
+  /* Ajustado sin !important */
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-top: -2px;
+  letter-spacing: 0.05em;
+}
+
+/* Adjust position if we are on a larger screen */
+@media (min-width: 768px) {
+  button.scroll-to-top-btn {
+    bottom: 30px;
+    right: 30px;
+    width: 54px;
+    height: 54px;
+    border-radius: 27px;
+  }
+
+  button.scroll-to-top-btn .scroll-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  button.scroll-to-top-btn span.scroll-hint {
+    font-size: 0.55rem;
+  }
+}

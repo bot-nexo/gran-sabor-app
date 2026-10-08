@@ -1,0 +1,163 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   ESTADO DEL NEGOCIO EN LA TIENDA — badge abierto/cerrado + aviso checkout
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Badge en el Hero ──────────────────────────────────────────────────── */
+.hero__estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  border: 1px solid transparent;
+}
+
+.hero__estado-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.hero__estado--abierto {
+  background: rgba(127, 200, 169, 0.12);
+  border-color: rgba(127, 200, 169, 0.45);
+  color: #7fc8a9;
+}
+
+.hero__estado--abierto .hero__estado-dot {
+  background: #7fc8a9;
+  box-shadow: 0 0 0 0 rgba(127, 200, 169, 0.5);
+  animation: pulso-abierto 2s ease infinite;
+}
+
+@keyframes pulso-abierto {
+  0% {
+    box-shadow: 0 0 0 0 rgba(127, 200, 169, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(127, 200, 169, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(127, 200, 169, 0);
+  }
+}
+
+.hero__estado--cerrado {
+  background: rgba(224, 122, 95, 0.1);
+  border-color: rgba(224, 122, 95, 0.4);
+  color: #e07a5f;
+}
+
+.hero__estado--cerrado .hero__estado-dot {
+  background: #e07a5f;
+}
+
+/* ── Aviso de cerrado en el checkout ───────────────────────────────────── */
+.checkout-aviso-cerrado {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 1rem 1.5rem 0;
+  background: rgba(224, 122, 95, 0.1);
+  border: 1px solid rgba(224, 122, 95, 0.35);
+  border-radius: 12px;
+  color: #c05a3e;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.checkout-aviso-cerrado svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Selector de modalidad de entrega (checkout paso 1) ────────────────── */
+.entrega-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.entrega-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #faf7f2;
+  border: 1.5px solid rgba(61, 35, 20, 0.15);
+  border-radius: 14px;
+  padding: 14px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  color: #3d2314;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.1s ease;
+}
+
+.entrega-option:hover {
+  border-color: rgba(217, 43, 56, 0.45);
+  background-color: #ffffff;
+}
+
+.entrega-option:active {
+  transform: scale(0.98);
+}
+
+/* Seleccionada: acento fresa, igual que las option-cards del modal */
+.entrega-option--activa {
+  border-color: #d92b38;
+  background: rgba(217, 43, 56, 0.05);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.entrega-option svg {
+  color: #3d2314;
+  transition: color 0.2s ease;
+}
+
+.entrega-option--activa svg {
+  color: #d92b38;
+}
+
+.entrega-option span {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.entrega-option small {
+  font-size: 11.5px;
+  color: #8a6f57;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.entrega-option--activa small {
+  color: #b4232e;
+}
+
+.entrega-aviso {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  color: #8a6f57;
+  font-style: italic;
+}
+
+.entrega-option:focus-visible {
+  outline: 2px solid rgba(217, 43, 56, 0.5);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .entrega-options {
+    grid-template-columns: 1fr;
+  }
+}

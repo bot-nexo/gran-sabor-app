@@ -1,0 +1,342 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   COMBOS CAROUSEL — Carrusel Horizontal Compacto de Packs (No Invasivo)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.combos-section {
+  padding: 2.25rem 0 2rem;
+  background-color: var(--combos-bg, #fbf8f3);
+  transition: background-color 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(61, 35, 20, 0.05);
+}
+
+.combos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+}
+
+.combos-header__left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.combos-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  background: rgba(217, 43, 56, 0.15);
+  border: 1px solid rgba(217, 43, 56, 0.3);
+  color: #ff6b77;
+  font-size: 0.74rem;
+  font-weight: 800;
+  width: fit-content;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.combos-title {
+  font-size: 1.45rem;
+  font-weight: 900;
+  color: var(--text-primary, #fdfbf7);
+  letter-spacing: -0.02em;
+  margin: 0;
+  font-family: var(--menu-font, "Outfit", "Montserrat", sans-serif);
+}
+
+.combos-subtitle {
+  font-size: 0.84rem;
+  font-weight: 500;
+  color: var(--text-muted, #bda899);
+  margin: 0;
+}
+
+/* Controles de navegación del carrusel */
+.carousel-nav-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.carousel-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.carousel-dot--active {
+  width: 20px;
+  background: var(--combos-accent, #d92b38);
+}
+
+.carousel-nav-btns {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.carousel-nav-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary, #fdfbf7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.carousel-nav-btn:hover {
+  background: var(--combos-accent, #d92b38);
+  color: #ffffff;
+  border-color: var(--combos-accent, #d92b38);
+  transform: scale(1.05);
+}
+
+.carousel-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Pista deslizante (Horizontal Scroll con Snap) */
+.combos-carousel-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 0.4rem 0.5rem 0.9rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.combos-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Tarjeta compacta tipo banner horizontal (altura reducida ~160px) */
+.combo-card--compact {
+  scroll-snap-align: start;
+  flex: 0 0 340px;
+  max-width: 360px;
+  height: 165px;
+  border-radius: 16px;
+  background-color: var(--combos-card-bg, #1c120c);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  display: flex;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.combo-card--compact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  border-color: rgba(217, 43, 56, 0.35);
+}
+
+.combo-card__media {
+  position: relative;
+  width: 125px;
+  height: 100%;
+  flex-shrink: 0;
+  overflow: hidden;
+  background-color: #120a06;
+}
+
+.combo-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.combo-card--compact:hover .combo-card__img {
+  transform: scale(1.06);
+}
+
+.combo-card__badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--combos-accent, #d92b38);
+  color: #ffffff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.66rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.combo-card__body {
+  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+
+.combo-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.combo-card__name {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--text-primary, #fdfbf7);
+  line-height: 1.25;
+  margin: 0;
+  font-family: var(--menu-font, "Outfit", "Montserrat", sans-serif);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.combo-card__prices {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.combo-card__price-current {
+  font-size: 1.05rem;
+  font-weight: 900;
+  color: #ffcc00;
+  display: block;
+  line-height: 1.1;
+  font-family: var(--menu-font, "Outfit", "Montserrat", sans-serif);
+}
+
+.combo-card__price-original {
+  font-size: 0.72rem;
+  color: #8c7b70;
+  text-decoration: line-through;
+  display: block;
+}
+
+.combo-card__desc {
+  font-size: 0.74rem;
+  color: var(--text-muted, #bda899);
+  line-height: 1.3;
+  margin: 0.25rem 0 0.35rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.combo-card__includes-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-bottom: 0.35rem;
+}
+
+.combo-card__includes-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #e2d5cc;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.combo-card__btn-add {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--combos-accent, #d92b38);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.combo-card__btn-add:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  opacity: 0.95;
+}
+
+@media (max-width: 640px) {
+  .combos-section {
+    padding: 1.75rem 0 1.25rem;
+  }
+  .combos-title {
+    font-size: 1.25rem;
+  }
+  .combos-subtitle {
+    display: none;
+  }
+  .combo-card--compact {
+    flex: 0 0 295px;
+    height: 155px;
+  }
+  .combo-card__media {
+    width: 110px;
+  }
+}
+
+/* Barra de progreso de autoplay continuo (igual que Destacados) */
+.carousel-progress-track {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(61, 35, 20, 0.06);
+}
+
+.carousel-progress-fill {
+  height: 100%;
+  background: var(--combos-accent, #d92b38);
+  transition: width 0.05s linear;
+}
+
+.combo-card--active {
+  border-color: rgba(217, 43, 56, 0.35);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+

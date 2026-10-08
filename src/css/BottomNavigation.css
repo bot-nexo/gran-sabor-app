@@ -1,0 +1,176 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   BOTTOM NAVIGATION SABORIO — Barra Inferior Fija Móvil de Alta Gama
+   Paleta Oficial Pavés Medellín: Chocolate profundo, Crema, Rojo Fresa & Oro
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.saborio-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 990;
+  background: rgba(13, 8, 5, 0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.saborio-bottom-nav__container {
+  max-width: 520px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 68px;
+  padding: 0 0.5rem calc(env(safe-area-inset-bottom, 0px));
+  position: relative;
+}
+
+/* Items individuales de navegación */
+.saborio-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  background: transparent;
+  border: none;
+  color: #8c7b70;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.saborio-nav-item:hover {
+  color: #ffcc00;
+}
+
+.saborio-nav-item--active {
+  color: #ffcc00 !important;
+}
+
+.saborio-nav-item--active .saborio-nav-icon {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 2px 6px rgba(255, 204, 0, 0.4));
+}
+
+.saborio-nav-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+/* Botón Central Elevado (FAB Estilo Saborio) */
+.saborio-nav-fab-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -24px;
+}
+
+.saborio-nav-fab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #ffcc00;
+  color: #120a06;
+  border: 4.5px solid #0d0805;
+  box-shadow:
+    0 8px 24px rgba(255, 204, 0, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.saborio-nav-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 10px 28px rgba(255, 204, 0, 0.6);
+  background: #ffd633;
+}
+
+.saborio-nav-fab:active {
+  transform: scale(0.95);
+}
+
+.saborio-fab-icon {
+  color: #120a06;
+}
+
+.saborio-fab-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #ffcc00;
+  margin-top: 2px;
+}
+
+/* Badge del FAB */
+.saborio-fab-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #d92b38;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #0d0805;
+  box-shadow: 0 2px 6px rgba(217, 43, 56, 0.5);
+  animation: pulseBadge 2s infinite;
+}
+
+/* Badge de Mi Carrito */
+.saborio-cart-icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.saborio-cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background: #ffcc00;
+  color: #120a06;
+  font-size: 0.65rem;
+  font-weight: 900;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes pulseBadge {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* Margen inferior para que nada quede tapado */
+.has-bottom-nav {
+  padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* SweetAlert en tema oscuro gourmet */
+.saborio-swal-dark {
+  background: #140c08 !important;
+  color: #fdfbf7 !important;
+  border: 1px solid rgba(255, 204, 0, 0.3) !important;
+  border-radius: 20px !important;
+}
