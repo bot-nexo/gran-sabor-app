@@ -1,0 +1,418 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   PRODUCT REEL / STORIES MODAL — Experiencia Inmersiva de Producto & Video
+   ══════════════════════════════════════════════════════════════════════════ */
+
+.product-reel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: rgba(5, 3, 2, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  animation: reelFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  font-family: var(--menu-font, "Montserrat", sans-serif);
+}
+
+@keyframes reelFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Contenedor tipo pantalla móvil centrada en desktop y 100% en móvil */
+.product-reel-container {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  height: 100%;
+  max-height: 94vh;
+  border-radius: 28px;
+  overflow: hidden;
+  background-color: #0d0805;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.7),
+    0 0 40px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  animation: reelSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes reelSlideUp {
+  from {
+    transform: scale(0.94) translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ── Barra de Progreso Superior (Estilo Historias / Reels) ───────────────── */
+
+.product-reel__progress-wrap {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  right: 16px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  overflow: hidden;
+  z-index: 20;
+}
+
+.product-reel__progress-bar {
+  height: 100%;
+  width: 100%;
+  background: var(--btn-primary-bg, #ffcc00);
+  border-radius: inherit;
+  animation: reelProgress 8s linear infinite;
+}
+
+@keyframes reelProgress {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+/* ── Top Header: Botón Volver, Categoría y Audio ─────────────────────────── */
+
+.product-reel__header {
+  position: absolute;
+  top: 22px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 20;
+}
+
+.product-reel__btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(18, 10, 6, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fdfbf7;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-reel__btn-back:hover {
+  background: rgba(18, 10, 6, 0.9);
+  transform: translateX(-2px);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.product-reel__category-title {
+  color: #fdfbf7;
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.02em;
+}
+
+.product-reel__btn-audio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(18, 10, 6, 0.65);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fdfbf7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-reel__btn-audio:hover {
+  background: rgba(18, 10, 6, 0.9);
+  transform: scale(1.08);
+}
+
+.product-reel__btn-audio--placeholder {
+  width: 36px;
+}
+
+/* ── Media de Fondo (Video / Imagen) ────────────────────────────────────── */
+
+.product-reel__media-box {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.product-reel__media-img,
+.product-reel__media-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.product-reel__media-video {
+  position: absolute;
+  inset: 0;
+}
+
+.product-reel__media-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(13, 8, 5, 0.95) 0%,
+    rgba(13, 8, 5, 0.4) 35%,
+    rgba(0, 0, 0, 0.15) 60%,
+    rgba(0, 0, 0, 0.6) 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ── Tarjeta Inferior de Cristal (Glassmorphism Sheet) ───────────────────── */
+
+.product-reel__sheet {
+  position: relative;
+  z-index: 10;
+  margin: auto 16px 16px;
+  background: rgba(22, 14, 10, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 22px;
+  padding: 1.25rem 1.2rem 1.15rem;
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.product-reel__sheet-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.product-reel__sheet-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  flex: 1;
+}
+
+.product-reel__sheet-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 204, 0, 0.2) 0%, rgba(217, 43, 56, 0.2) 100%);
+  border: 1px solid rgba(255, 204, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--btn-primary-bg, #ffcc00);
+  flex-shrink: 0;
+  font-size: 1.2rem;
+}
+
+.product-reel__sheet-title-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.product-reel__sheet-badge {
+  display: inline-block;
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #120a06;
+  background: var(--btn-primary-bg, #ffcc00);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.product-reel__sheet-title {
+  font-size: 1.18rem;
+  font-weight: 900;
+  color: #fdfbf7;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.product-reel__sheet-price-box {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.product-reel__sheet-price {
+  font-size: 1.35rem;
+  font-weight: 950;
+  color: var(--price-tag-bg, #ffcc00);
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+.product-reel__sheet-description {
+  font-size: 0.82rem;
+  color: #e5d8cf;
+  line-height: 1.45;
+  margin: 0;
+}
+
+/* Micro-Chips */
+.product-reel__sheet-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.product-reel__tag-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fdfbf7;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+/* ── Barra de Acciones ──────────────────────────────────────────────────── */
+
+.product-reel__sheet-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.product-reel__sheet-secondary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.product-reel__action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fdfbf7;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.product-reel__action-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  transform: scale(1.1);
+}
+
+.product-reel__action-btn--fav {
+  border-color: rgba(255, 71, 87, 0.4);
+  background: rgba(255, 71, 87, 0.15);
+}
+
+/* Botón Principal + Agregar */
+.product-reel__btn-add {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--btn-primary-bg, #ffcc00);
+  color: var(--btn-primary-text, #120a06);
+  font-size: 0.92rem;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-reel__btn-add:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: brightness(1.1);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+}
+
+.product-reel__btn-add:active {
+  transform: scale(0.97);
+}
+
+.product-reel__btn-add--added {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+/* Responsive Mobile */
+@media (max-width: 640px) {
+  .product-reel-backdrop {
+    padding: 0;
+  }
+
+  .product-reel-container {
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+  }
+
+  .product-reel__sheet {
+    margin: auto 12px 14px;
+    padding: 1.1rem 1.05rem 1rem;
+    border-radius: 20px;
+  }
+
+  .product-reel__sheet-title {
+    font-size: 1.08rem;
+  }
+
+  .product-reel__sheet-price {
+    font-size: 1.22rem;
+  }
+}

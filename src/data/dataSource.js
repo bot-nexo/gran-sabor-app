@@ -6,6 +6,8 @@ import { calculateItemUnitPrice } from "../utils/price";
 import {
   categories as localCategories,
   localImagesByNombre,
+  localVideosByNombre,
+  localTagsByNombre,
   info as localInfo,
   products as localProducts,
   MINIMO_ENVIO_GRATIS_DEFAULT,
@@ -42,6 +44,27 @@ const PLACEHOLDER_IMG =
 const resolveImage = (row) =>
   (row.imagen || row.imagen_url || "").trim() || localImagesByNombre[row.nombre] || PLACEHOLDER_IMG;
 
+const resolveVideo = (row) =>
+  (row.video || row.video_url || row.videoUrl || row.capa_video_url || "").trim() ||
+  localVideosByNombre[row.nombre] ||
+  "";
+
+const resolveTags = (row) => {
+  if (Array.isArray(row.tags) && row.tags.length > 0) return row.tags;
+  if (typeof row.tags === "string" && row.tags.startsWith("[")) {
+    try {
+      const parsed = JSON.parse(row.tags);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch {}
+  }
+  if (row.tags && typeof row.tags === "string") {
+    const split = row.tags.split(",").map((t) => t.trim()).filter(Boolean);
+    if (split.length > 0) return split;
+  }
+  if (Array.isArray(row.etiquetas) && row.etiquetas.length > 0) return row.etiquetas;
+  return localTagsByNombre[row.nombre] || [];
+};
+
 // ── Normalizadores ────────────────────────────────────────────────────────────
 const normalizeCategory = (row) => ({
   id: row.nombre || String(row.id),
@@ -56,6 +79,8 @@ const normalizeProduct = (row) => ({
   ...row,
   category: row.category || "",
   imagen: resolveImage(row),
+  video: resolveVideo(row),
+  tags: resolveTags(row),
   destacado: Boolean(row.destacado),
   disponible: row.disponible !== false && row.disponible !== 0,
   adiciones: Array.isArray(row.adiciones) ? row.adiciones : [],
@@ -291,7 +316,13 @@ export async function getCatalogDesign() {
 }
 
 export async function getBadges() {
-  return [];
+  try {
+    const res = await fetch("/api/badges");
+    if (!res.ok) throw new Error("Error fetching badges");
+    return await res.json();
+  } catch {
+    return [];
+  }
 }
 
 export async function getPaymentMethods() {
@@ -373,47 +404,75 @@ export async function deleteCategory(id) {
 
 export async function getAdditions() {
   try {
-    const res = await fetch("/api/catalog");
-    const data = await res.json();
-    return data.additions || [];
+    const res = await fetch("/api/additions");
+    if (!res.ok) throw new Error("Error fetching additions");
+    return await res.json();
   } catch {
     return [];
   }
 }
 
 export async function createAddition(add) {
+  const res = await fetch("/api/additions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(add)
+  });
+  const data = await res.json();
   invalidateCatalog();
-  return add;
+  return data;
 }
 
 export async function updateAddition(id, cambios) {
+  const res = await fetch(`/api/additions/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cambios)
+  });
+  const data = await res.json();
   invalidateCatalog();
+  return data;
 }
 
 export async function deleteAddition(id) {
+  await fetch(`/api/additions/${id}`, { method: "DELETE" });
   invalidateCatalog();
 }
 
 export async function getSauces() {
   try {
-    const res = await fetch("/api/catalog");
-    const data = await res.json();
-    return data.sauces || [];
+    const res = await fetch("/api/sauces");
+    if (!res.ok) throw new Error("Error fetching sauces");
+    return await res.json();
   } catch {
     return [];
   }
 }
 
 export async function createSauce(sauce) {
+  const res = await fetch("/api/sauces", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(sauce)
+  });
+  const data = await res.json();
   invalidateCatalog();
-  return sauce;
+  return data;
 }
 
 export async function updateSauce(id, cambios) {
+  const res = await fetch(`/api/sauces/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cambios)
+  });
+  const data = await res.json();
   invalidateCatalog();
+  return data;
 }
 
 export async function deleteSauce(id) {
+  await fetch(`/api/sauces/${id}`, { method: "DELETE" });
   invalidateCatalog();
 }
 
@@ -427,7 +486,16 @@ export async function createSize(size) { return size; }
 export async function updateSize(id, cambios) {}
 export async function deleteSize(id) {}
 
-export async function upsertBadge(badge) {}
+export async function upsertBadge(badge) {
+  const res = await fetch("/api/badges", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(badge)
+  });
+  invalidateCatalog();
+  return await res.json();
+}
+
 export async function deleteBadge(id) {}
 
 export async function getProductAdditions() { return []; }
@@ -620,26 +688,96 @@ export async function incrementCustomerOrderCount(telefono, nombre = "") {
 // ── MESAS Y COLABORADORES ──────────────────────────────────────────────────────
 
 export async function getMesas() {
-  return [
-    { id: 1, numero: 1, activa: true },
-    { id: 2, numero: 2, activa: true },
-    { id: 3, numero: 3, activa: true },
-    { id: 4, numero: 4, activa: true },
-    { id: 5, numero: 5, activa: true },
-  ];
+  try {
+    const res = await fetch("/api/mesas");
+    if (!res.ok) throw new Error("Error fetching mesas");
+    return await res.json();
+  } catch {
+    return [];
+  }
 }
 
 export async function getMesaActiva(numero) {
-  return { numero, activa: true };
+  const mesas = await getMesas();
+  const found = mesas.find((m) => Number(m.numero) === Number(numero));
+  return found || { numero, activa: true };
 }
 
-export async function createMesas() {}
-export async function updateMesa() {}
-export async function deleteMesa() {}
+export async function createMesas(numeros) {
+  if (Array.isArray(numeros)) {
+    for (const num of numeros) {
+      await fetch("/api/mesas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ numero: num })
+      });
+    }
+  }
+}
 
-export async function getColaboradores() { return []; }
-export async function getMyColaborador() { return null; }
-export async function manageCollaborator() { return {}; }
+export async function updateMesa(id, cambios) {
+  await fetch(`/api/mesas/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(cambios)
+  });
+}
+
+export async function deleteMesa(id) {
+  await fetch(`/api/mesas/${id}`, { method: "DELETE" });
+}
+
+export async function getColaboradores() {
+  try {
+    const res = await fetch("/api/colaboradores");
+    if (!res.ok) throw new Error("Error fetching colaboradores");
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+export async function getMyColaborador() {
+  return null;
+}
+
+export async function manageCollaborator(action, payload) {
+  if (action === "create") {
+    const res = await fetch("/api/colaboradores", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nombre: payload.nombre,
+        email: payload.usuario || payload.email,
+        password: payload.password,
+        rol: payload.rol || "colaborador"
+      })
+    });
+    return await res.json();
+  }
+  if (action === "update") {
+    const res = await fetch(`/api/colaboradores/${payload.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    return await res.json();
+  }
+  if (action === "set_password") {
+    const res = await fetch(`/api/colaboradores/${payload.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: payload.password })
+    });
+    return await res.json();
+  }
+  if (action === "delete") {
+    await fetch(`/api/colaboradores/${payload.id}`, { method: "DELETE" });
+    return { success: true };
+  }
+  return {};
+}
+
 export async function solicitarCambioPassword() { return true; }
 export const loginEmailFromIdentifier = (v) => v;
 

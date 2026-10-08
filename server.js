@@ -30,7 +30,12 @@ const query = {
   run: (sql, params = []) => {
     if (db.prepare) {
       const stmt = db.prepare(sql);
-      return stmt.run(...params);
+      const res = stmt.run(...params);
+      return {
+        ...res,
+        lastInsertRowid: res?.lastInsertRowid !== undefined ? Number(res.lastInsertRowid) : undefined,
+        changes: res?.changes !== undefined ? Number(res.changes) : undefined
+      };
     }
     return db.exec(sql);
   },
@@ -72,6 +77,8 @@ function initSchema() {
       descripcion TEXT DEFAULT '',
       precio INTEGER NOT NULL DEFAULT 0,
       imagen TEXT DEFAULT '',
+      video TEXT DEFAULT '',
+      tags TEXT DEFAULT '[]',
       destacado INTEGER DEFAULT 0,
       disponible INTEGER DEFAULT 1,
       badge_active INTEGER DEFAULT 0,
@@ -100,6 +107,35 @@ function initSchema() {
       precio INTEGER DEFAULT 0,
       disponible INTEGER DEFAULT 1,
       max_cantidad INTEGER DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS mesas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      numero INTEGER UNIQUE NOT NULL,
+      activa INTEGER DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS colaboradores (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nombre TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      rol TEXT DEFAULT 'colaborador',
+      activo INTEGER DEFAULT 1,
+      password TEXT DEFAULT '12345678',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS customer_badges (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT UNIQUE NOT NULL,
+      required_orders INTEGER DEFAULT 0,
+      description TEXT DEFAULT '',
+      beneficio TEXT DEFAULT '',
+      discount_percentage INTEGER DEFAULT 0,
+      free_delivery INTEGER DEFAULT 0,
+      has_2x1 INTEGER DEFAULT 0,
+      apply_days TEXT DEFAULT '[]',
+      is_active INTEGER DEFAULT 1
     );
 
     CREATE TABLE IF NOT EXISTS orders (
@@ -184,12 +220,24 @@ function initSchema() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  try { query.exec("ALTER TABLE products ADD COLUMN video TEXT DEFAULT ''"); } catch {}
+  try { query.exec("ALTER TABLE products ADD COLUMN tags TEXT DEFAULT '[]'"); } catch {}
+
+  try {
+    query.run("UPDATE products SET video = '/videos/cheesecake.mp4', tags = '[\"⭐ Especial del Chef\", \"🍓 Fruta Fresca\", \"⏱️ 10 min\"]' WHERE nombre LIKE '%Cheesecake%' AND (video IS NULL OR video = '')");
+    query.run("UPDATE products SET video = '/videos/croissant.mp4', tags = '[\"🥐 100% Mantequilla\", \"🌰 Almendras\", \"⏱️ 5 min\"]' WHERE nombre LIKE '%Croissant%' AND (video IS NULL OR video = '')");
+    query.run("UPDATE products SET video = '/videos/chocolate.mp4', tags = '[\"🍫 70% Cacao Belga\", \"🔥 Más Vendido\", \"⏱️ 8 min\"]' WHERE nombre LIKE '%Chocolate%' AND (video IS NULL OR video = '')");
+    query.run("UPDATE products SET video = '/videos/cafe.mp4', tags = '[\"☕ Café de Origen\", \"🌿 Especias\", \"⏱️ 5 min\"]' WHERE nombre LIKE '%Cappuccino%' AND (video IS NULL OR video = '')");
+  } catch {}
 }
 
 // ── Datos Semilla (Seed) ────────────────────────────────────────────────────────
 function seedDatabase(force = false) {
   const count = query.get("SELECT COUNT(*) as c FROM products")?.c || 0;
   if (count > 0 && !force) {
+    // Si ya hay productos, solo aseguramos que las tablas accesorias tengan datos si están vacías
+    seedAccessoriesIfEmpty();
     return;
   }
 
@@ -203,6 +251,9 @@ function seedDatabase(force = false) {
       DELETE FROM settings;
       DELETE FROM catalog_design;
       DELETE FROM orders;
+      DELETE FROM mesas;
+      DELETE FROM colaboradores;
+      DELETE FROM customer_badges;
     `);
   }
 
@@ -222,7 +273,7 @@ function seedDatabase(force = false) {
     );
   }
 
-  // 2. Productos de prueba con fotos apetitosas y generales
+  // 2. Productos de prueba con videos locales y tags
   const defaultProducts = [
     {
       nombre: "Cheesecake Artesanal de Frutos Rojos",
@@ -230,6 +281,8 @@ function seedDatabase(force = false) {
       descripcion: "Cremosa base de queso crema estilo New York con coulis casero de fresas, moras y arándanos silvestres.",
       precio: 14000,
       imagen: "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600&auto=format&fit=crop&q=80",
+      video: "/videos/cheesecake.mp4",
+      tags: JSON.stringify(["⭐ Especial del Chef", "🍓 Fruta Fresca", "⏱️ 10 min"]),
       destacado: 1,
       badge_active: 1,
       badge_rule: "⭐ Más Vendido"
@@ -240,6 +293,8 @@ function seedDatabase(force = false) {
       descripcion: "Hojaldre artesanal 100% mantequilla relleno de crema de almendras tostadas y cubierto con almendras laminadas.",
       precio: 11500,
       imagen: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&auto=format&fit=crop&q=80",
+      video: "/videos/croissant.mp4",
+      tags: JSON.stringify(["🥐 100% Mantequilla", "🌰 Almendras", "⏱️ 5 min"]),
       destacado: 1,
       badge_active: 1,
       badge_rule: "✨ Horneado Hoy"
@@ -250,6 +305,8 @@ function seedDatabase(force = false) {
       descripcion: "Bizcocho húmedo de cacao al 70% bañado en ganache tibio de chocolate semiamargo y virutas crujientes.",
       precio: 13000,
       imagen: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format&fit=crop&q=80",
+      video: "/videos/chocolate.mp4",
+      tags: JSON.stringify(["🍫 70% Cacao Belga", "🔥 Más Vendido", "⏱️ 8 min"]),
       destacado: 1,
       badge_2x1_active: 1,
       badge_2x1_days: JSON.stringify(["Jueves", "Viernes"])
@@ -260,6 +317,8 @@ function seedDatabase(force = false) {
       descripcion: "Espresso doble de origen con leche vaporizada sedosa, extracto natural de vainilla y toque de canela ceilán.",
       precio: 9500,
       imagen: "https://images.unsplash.com/photo-1534778101976-62847782c213?w=600&auto=format&fit=crop&q=80",
+      video: "/videos/cafe.mp4",
+      tags: JSON.stringify(["☕ Café de Origen", "🌿 Especias", "⏱️ 5 min"]),
       destacado: 0
     },
     {
@@ -268,6 +327,8 @@ function seedDatabase(force = false) {
       descripcion: "Bebida helada cremosa a base de café espresso, chocolate artesanal, hielo triturado y salsa de toffee.",
       precio: 12500,
       imagen: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=600&auto=format&fit=crop&q=80",
+      video: "",
+      tags: JSON.stringify(["🥤 Frappé Helado", "🍯 Toffee"]),
       destacado: 1
     },
     {
@@ -276,6 +337,8 @@ function seedDatabase(force = false) {
       descripcion: "Pan ciabatta rústico, finas láminas de roast beef marinadas, queso brie fundido, rúcula y mostaza dijon.",
       precio: 22000,
       imagen: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=600&auto=format&fit=crop&q=80",
+      video: "",
+      tags: JSON.stringify(["🥪 Brunch", "🧀 Queso Brie"]),
       destacado: 1
     },
     {
@@ -284,6 +347,8 @@ function seedDatabase(force = false) {
       descripcion: "Puré orgánico de açaí con plátano, kiwi fresco, fresas, semillas de chía y miel de abejas pura.",
       precio: 16500,
       imagen: "https://images.unsplash.com/photo-1590301157890-4810ed352733?w=600&auto=format&fit=crop&q=80",
+      video: "",
+      tags: JSON.stringify(["🍓 Frutas Frescas", "🍯 Miel"]),
       destacado: 0
     },
     {
@@ -292,6 +357,8 @@ function seedDatabase(force = false) {
       descripcion: "Espectacular torta aterciopelada roja de 12 porciones con capas generosas de frosting de queso crema y vainilla.",
       precio: 78000,
       imagen: "https://images.unsplash.com/photo-1586788680434-30d324b2d46f?w=600&auto=format&fit=crop&q=80",
+      video: "",
+      tags: JSON.stringify(["🎂 Familiar (12 porc.)", "🍰 Red Velvet"]),
       destacado: 1,
       nota: "PEDIDO DISPONIBLE CON 4 HORAS DE ANTICIPACIÓN.",
       tiempo_preparacion_horas: 4
@@ -300,14 +367,16 @@ function seedDatabase(force = false) {
 
   for (const prod of defaultProducts) {
     query.run(
-      `INSERT INTO products (nombre, category, descripcion, precio, imagen, destacado, disponible, badge_active, badge_2x1_active, badge_2x1_days, badge_rule, nota, tiempo_preparacion_horas)
-       VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (nombre, category, descripcion, precio, imagen, video, tags, destacado, disponible, badge_active, badge_2x1_active, badge_2x1_days, badge_rule, nota, tiempo_preparacion_horas)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)`,
       [
         prod.nombre,
         prod.category,
         prod.descripcion,
         prod.precio,
         prod.imagen,
+        prod.video || "",
+        prod.tags || "[]",
         prod.destacado || 0,
         prod.badge_active || 0,
         prod.badge_2x1_active || 0,
@@ -358,7 +427,7 @@ function seedDatabase(force = false) {
      VALUES (1, 'Gran Sabor Bistro & Café', 'Experiencia gastronómica artesanal, repostería y café de especialidad', '3001234567', 'Av. Principal # 45 - 80, Zona Gourmet', 'https://maps.google.com', '@gransabor_demo', 4000, 45000, 1, 1, 1, 0, 0, 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&auto=format&fit=crop&q=80')`
   );
 
-  // 6. Pedidos de muestra iniciales para el Admin
+  // 6. Pedidos de muestra iniciales
   const sampleOrders = [
     {
       numero: 201,
@@ -411,7 +480,47 @@ function seedDatabase(force = false) {
     );
   }
 
+  seedAccessoriesIfEmpty();
   console.log("✅ Base de datos SQLite inicializada con datos semilla con éxito.");
+}
+
+function seedAccessoriesIfEmpty() {
+  // Mesas
+  const mesaCount = query.get("SELECT COUNT(*) as c FROM mesas")?.c || 0;
+  if (mesaCount === 0) {
+    for (let i = 1; i <= 6; i++) {
+      query.run("INSERT INTO mesas (numero, activa) VALUES (?, 1)", [i]);
+    }
+  }
+
+  // Colaboradores
+  const colabCount = query.get("SELECT COUNT(*) as c FROM colaboradores")?.c || 0;
+  if (colabCount === 0) {
+    query.run("INSERT INTO colaboradores (nombre, email, rol, activo, password) VALUES (?, ?, ?, 1, ?)", [
+      "Administrador Demo", "admin@gransabor.com", "admin", "12345678"
+    ]);
+    query.run("INSERT INTO colaboradores (nombre, email, rol, activo, password) VALUES (?, ?, ?, 1, ?)", [
+      "Carlos Mesero", "carlos@gransabor.com", "colaborador", "12345678"
+    ]);
+  }
+
+  // Insignias de Fidelización
+  const badgeCount = query.get("SELECT COUNT(*) as c FROM customer_badges")?.c || 0;
+  if (badgeCount === 0) {
+    const defaultBadges = [
+      { name: "Nuevo", required_orders: 0, description: "Bienvenido a la familia", beneficio: "Acumula visitas", discount_percentage: 0, free_delivery: 0, has_2x1: 0, apply_days: "[]" },
+      { name: "Bronce", required_orders: 3, description: "Cliente frecuente", beneficio: "5% dto. en postres", discount_percentage: 5, free_delivery: 0, has_2x1: 0, apply_days: "[]" },
+      { name: "Plata", required_orders: 6, description: "Amante del sabor", beneficio: "10% dto. + Domicilio gratis", discount_percentage: 10, free_delivery: 1, has_2x1: 0, apply_days: "[]" },
+      { name: "Oro", required_orders: 12, description: "Cliente VIP", beneficio: "15% dto. y 2x1 los viernes", discount_percentage: 15, free_delivery: 1, has_2x1: 1, apply_days: JSON.stringify(["Viernes"]) },
+      { name: "Platino", required_orders: 20, description: "Leyenda Gourmet", beneficio: "20% dto. en toda la carta", discount_percentage: 20, free_delivery: 1, has_2x1: 1, apply_days: JSON.stringify(["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]) },
+    ];
+    for (const b of defaultBadges) {
+      query.run(
+        "INSERT INTO customer_badges (name, required_orders, description, beneficio, discount_percentage, free_delivery, has_2x1, apply_days, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)",
+        [b.name, b.required_orders, b.description, b.beneficio, b.discount_percentage, b.free_delivery, b.has_2x1, b.apply_days]
+      );
+    }
+  }
 }
 
 // Inicializar DB
@@ -437,9 +546,18 @@ app.get("/api/catalog", (req, res) => {
     const additions = query.all("SELECT * FROM additions WHERE disponible = 1");
     const sauces = query.all("SELECT * FROM sauces WHERE disponible = 1");
 
-    // Parsear campos JSON en productos
     const parsedProducts = products.map(p => ({
       ...p,
+      video: p.video || "",
+      tags: (() => {
+        try {
+          return typeof p.tags === 'string' && p.tags.startsWith('[')
+            ? JSON.parse(p.tags)
+            : (p.tags ? String(p.tags).split(',').map(t => t.trim()).filter(Boolean) : []);
+        } catch {
+          return [];
+        }
+      })(),
       destacado: Boolean(p.destacado),
       disponible: Boolean(p.disponible),
       badge_active: Boolean(p.badge_active),
@@ -463,7 +581,7 @@ app.get("/api/catalog", (req, res) => {
   }
 });
 
-// 2. Categorías
+// 2. Categorías (CRUD)
 app.get("/api/categories", (req, res) => {
   try {
     const rows = query.all("SELECT * FROM categories ORDER BY orden ASC");
@@ -491,11 +609,21 @@ app.put("/api/categories/:id", (req, res) => {
   try {
     const id = req.params.id;
     const { nombre, emoji, label, orden, visible } = req.body;
+    const current = query.get("SELECT * FROM categories WHERE id = ? OR nombre = ?", [id, id]);
+    if (!current) return res.status(404).json({ error: "Categoría no encontrada" });
+
     query.run(
-      "UPDATE categories SET nombre = COALESCE(?, nombre), emoji = COALESCE(?, emoji), label = COALESCE(?, label), orden = COALESCE(?, orden), visible = COALESCE(?, visible) WHERE id = ?",
-      [nombre, emoji, label, orden, visible === undefined ? null : (visible ? 1 : 0), id]
+      "UPDATE categories SET nombre = ?, emoji = ?, label = ?, orden = ?, visible = ? WHERE id = ?",
+      [
+        nombre !== undefined ? nombre : current.nombre,
+        emoji !== undefined ? emoji : current.emoji,
+        label !== undefined ? label : (emoji !== undefined || nombre !== undefined ? `${emoji !== undefined ? emoji : current.emoji || ""} ${nombre !== undefined ? nombre : current.nombre}`.trim() : current.label),
+        orden !== undefined ? orden : current.orden,
+        visible !== undefined ? (visible ? 1 : 0) : current.visible,
+        current.id
+      ]
     );
-    const row = query.get("SELECT * FROM categories WHERE id = ?", [id]);
+    const row = query.get("SELECT * FROM categories WHERE id = ?", [current.id]);
     res.json(row);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -504,19 +632,29 @@ app.put("/api/categories/:id", (req, res) => {
 
 app.delete("/api/categories/:id", (req, res) => {
   try {
-    query.run("DELETE FROM categories WHERE id = ?", [req.params.id]);
+    query.run("DELETE FROM categories WHERE id = ? OR nombre = ?", [req.params.id, req.params.id]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 3. Productos
+// 3. Productos (CRUD)
 app.get("/api/products", (req, res) => {
   try {
     const rows = query.all("SELECT * FROM products ORDER BY id ASC");
     const parsed = rows.map(p => ({
       ...p,
+      video: p.video || "",
+      tags: (() => {
+        try {
+          return typeof p.tags === 'string' && p.tags.startsWith('[')
+            ? JSON.parse(p.tags)
+            : (p.tags ? String(p.tags).split(',').map(t => t.trim()).filter(Boolean) : []);
+        } catch {
+          return [];
+        }
+      })(),
       destacado: Boolean(p.destacado),
       disponible: Boolean(p.disponible),
       badge_active: Boolean(p.badge_active),
@@ -535,14 +673,16 @@ app.post("/api/products", (req, res) => {
   try {
     const p = req.body;
     const result = query.run(
-      `INSERT INTO products (nombre, category, descripcion, precio, imagen, destacado, disponible, badge_active, badge_2x1_active, badge_2x1_days, badge_rule, promo_price, nota, tiempo_preparacion_horas, adiciones, salsas)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO products (nombre, category, descripcion, precio, imagen, video, tags, destacado, disponible, badge_active, badge_2x1_active, badge_2x1_days, badge_rule, promo_price, nota, tiempo_preparacion_horas, adiciones, salsas)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         p.nombre,
         p.category || "",
         p.descripcion || "",
         p.precio || 0,
         p.imagen || "",
+        p.video || "",
+        JSON.stringify(Array.isArray(p.tags) ? p.tags : []),
         p.destacado ? 1 : 0,
         p.disponible !== false ? 1 : 0,
         p.badge_active ? 1 : 0,
@@ -573,7 +713,7 @@ app.put("/api/products/:id", (req, res) => {
 
     query.run(
       `UPDATE products SET 
-        nombre = ?, category = ?, descripcion = ?, precio = ?, imagen = ?, destacado = ?, disponible = ?,
+        nombre = ?, category = ?, descripcion = ?, precio = ?, imagen = ?, video = ?, tags = ?, destacado = ?, disponible = ?,
         badge_active = ?, badge_2x1_active = ?, badge_2x1_days = ?, badge_rule = ?, promo_price = ?,
         nota = ?, tiempo_preparacion_horas = ?, adiciones = ?, salsas = ?
        WHERE id = ?`,
@@ -583,6 +723,8 @@ app.put("/api/products/:id", (req, res) => {
         p.descripcion !== undefined ? p.descripcion : current.descripcion,
         p.precio !== undefined ? p.precio : current.precio,
         p.imagen !== undefined ? p.imagen : current.imagen,
+        p.video !== undefined ? p.video : (current.video || ""),
+        p.tags !== undefined ? (Array.isArray(p.tags) ? JSON.stringify(p.tags) : String(p.tags)) : (current.tags || "[]"),
         p.destacado !== undefined ? (p.destacado ? 1 : 0) : current.destacado,
         p.disponible !== undefined ? (p.disponible ? 1 : 0) : current.disponible,
         p.badge_active !== undefined ? (p.badge_active ? 1 : 0) : current.badge_active,
@@ -614,7 +756,290 @@ app.delete("/api/products/:id", (req, res) => {
   }
 });
 
-// 4. Pedidos (Orders)
+// 3.1 Adiciones (CRUD)
+app.get("/api/additions", (req, res) => {
+  try {
+    const rows = query.all("SELECT * FROM additions ORDER BY id ASC");
+    res.json(rows.map(r => ({ ...r, disponible: Boolean(r.disponible) })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/additions", (req, res) => {
+  try {
+    const { nombre, precio, disponible, max_cantidad } = req.body;
+    const result = query.run(
+      "INSERT INTO additions (nombre, precio, disponible, max_cantidad) VALUES (?, ?, ?, ?)",
+      [nombre, precio || 0, disponible !== false ? 1 : 0, max_cantidad || 1]
+    );
+    const row = query.get("SELECT * FROM additions WHERE id = ?", [result.lastInsertRowid]);
+    res.json({ ...row, disponible: Boolean(row.disponible) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put("/api/additions/:id", (req, res) => {
+  try {
+    const id = req.params.id;
+    const { nombre, precio, disponible, max_cantidad } = req.body;
+    const current = query.get("SELECT * FROM additions WHERE id = ?", [id]);
+    if (!current) return res.status(404).json({ error: "No encontrado" });
+
+    query.run(
+      "UPDATE additions SET nombre = ?, precio = ?, disponible = ?, max_cantidad = ? WHERE id = ?",
+      [
+        nombre !== undefined ? nombre : current.nombre,
+        precio !== undefined ? precio : current.precio,
+        disponible !== undefined ? (disponible ? 1 : 0) : current.disponible,
+        max_cantidad !== undefined ? max_cantidad : current.max_cantidad,
+        id
+      ]
+    );
+    const updated = query.get("SELECT * FROM additions WHERE id = ?", [id]);
+    res.json({ ...updated, disponible: Boolean(updated.disponible) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/additions/:id", (req, res) => {
+  try {
+    query.run("DELETE FROM additions WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3.2 Salsas (CRUD)
+app.get("/api/sauces", (req, res) => {
+  try {
+    const rows = query.all("SELECT * FROM sauces ORDER BY id ASC");
+    res.json(rows.map(r => ({ ...r, disponible: Boolean(r.disponible) })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/sauces", (req, res) => {
+  try {
+    const { nombre, precio, disponible, max_cantidad } = req.body;
+    const result = query.run(
+      "INSERT INTO sauces (nombre, precio, disponible, max_cantidad) VALUES (?, ?, ?, ?)",
+      [nombre, precio || 0, disponible !== false ? 1 : 0, max_cantidad || 1]
+    );
+    const row = query.get("SELECT * FROM sauces WHERE id = ?", [result.lastInsertRowid]);
+    res.json({ ...row, disponible: Boolean(row.disponible) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put("/api/sauces/:id", (req, res) => {
+  try {
+    const id = req.params.id;
+    const { nombre, precio, disponible, max_cantidad } = req.body;
+    const current = query.get("SELECT * FROM sauces WHERE id = ?", [id]);
+    if (!current) return res.status(404).json({ error: "No encontrado" });
+
+    query.run(
+      "UPDATE sauces SET nombre = ?, precio = ?, disponible = ?, max_cantidad = ? WHERE id = ?",
+      [
+        nombre !== undefined ? nombre : current.nombre,
+        precio !== undefined ? precio : current.precio,
+        disponible !== undefined ? (disponible ? 1 : 0) : current.disponible,
+        max_cantidad !== undefined ? max_cantidad : current.max_cantidad,
+        id
+      ]
+    );
+    const updated = query.get("SELECT * FROM sauces WHERE id = ?", [id]);
+    res.json({ ...updated, disponible: Boolean(updated.disponible) });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/sauces/:id", (req, res) => {
+  try {
+    query.run("DELETE FROM sauces WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3.3 Mesas (CRUD)
+app.get("/api/mesas", (req, res) => {
+  try {
+    const rows = query.all("SELECT * FROM mesas ORDER BY numero ASC");
+    res.json(rows.map(m => ({ ...m, activa: Boolean(m.activa) })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/mesas", (req, res) => {
+  try {
+    const { numero, cantidad = 1 } = req.body;
+    if (numero) {
+      query.run("INSERT OR REPLACE INTO mesas (numero, activa) VALUES (?, 1)", [numero]);
+    } else {
+      const maxNum = query.get("SELECT MAX(numero) as m FROM mesas")?.m || 0;
+      for (let i = 1; i <= cantidad; i++) {
+        query.run("INSERT OR REPLACE INTO mesas (numero, activa) VALUES (?, 1)", [maxNum + i]);
+      }
+    }
+    const rows = query.all("SELECT * FROM mesas ORDER BY numero ASC");
+    res.json(rows.map(m => ({ ...m, activa: Boolean(m.activa) })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put("/api/mesas/:id", (req, res) => {
+  try {
+    const id = req.params.id;
+    const { activa, numero } = req.body;
+    const current = query.get("SELECT * FROM mesas WHERE id = ? OR numero = ?", [id, id]);
+    if (!current) return res.status(404).json({ error: "No encontrada" });
+
+    query.run(
+      "UPDATE mesas SET activa = ?, numero = ? WHERE id = ?",
+      [
+        activa !== undefined ? (activa ? 1 : 0) : current.activa,
+        numero !== undefined ? numero : current.numero,
+        current.id
+      ]
+    );
+    const updated = query.get("SELECT * FROM mesas WHERE id = ?", [current.id]);
+    res.json(updated ? { ...updated, activa: Boolean(updated.activa) } : { success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/mesas/:id", (req, res) => {
+  try {
+    query.run("DELETE FROM mesas WHERE id = ? OR numero = ?", [req.params.id, req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3.4 Colaboradores (CRUD)
+app.get("/api/colaboradores", (req, res) => {
+  try {
+    const rows = query.all("SELECT id, nombre, email, rol, activo, created_at FROM colaboradores ORDER BY id ASC");
+    res.json(rows.map(c => ({ ...c, activo: Boolean(c.activo) })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/colaboradores", (req, res) => {
+  try {
+    const { nombre, email, rol, password } = req.body;
+    const cleanEmail = (email || "").trim().toLowerCase();
+    const result = query.run(
+      "INSERT OR REPLACE INTO colaboradores (nombre, email, rol, activo, password) VALUES (?, ?, ?, 1, ?)",
+      [nombre, cleanEmail, rol || "colaborador", password || "12345678"]
+    );
+    const rowId = Number(result.lastInsertRowid);
+    const row = query.get("SELECT id, nombre, email, rol, activo, created_at FROM colaboradores WHERE id = ? OR email = ?", [rowId, cleanEmail]);
+    res.json(row ? { ...row, activo: Boolean(row.activo) } : { id: rowId, nombre, email: cleanEmail, rol: rol || "colaborador", activo: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put("/api/colaboradores/:id", (req, res) => {
+  try {
+    const id = req.params.id;
+    const { nombre, email, rol, activo, password } = req.body;
+    const current = query.get("SELECT * FROM colaboradores WHERE id = ?", [id]);
+    if (!current) return res.status(404).json({ error: "No encontrado" });
+
+    query.run(
+      "UPDATE colaboradores SET nombre = ?, email = ?, rol = ?, activo = ?, password = ? WHERE id = ?",
+      [
+        nombre !== undefined ? nombre : current.nombre,
+        email !== undefined ? email : current.email,
+        rol !== undefined ? rol : current.rol,
+        activo !== undefined ? (activo ? 1 : 0) : current.activo,
+        password !== undefined ? password : current.password,
+        id
+      ]
+    );
+    const updated = query.get("SELECT id, nombre, email, rol, activo, created_at FROM colaboradores WHERE id = ?", [id]);
+    res.json(updated ? { ...updated, activo: Boolean(updated.activo) } : { success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete("/api/colaboradores/:id", (req, res) => {
+  try {
+    query.run("DELETE FROM colaboradores WHERE id = ?", [req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3.5 Insignias de Fidelización (Badges CRUD)
+app.get("/api/badges", (req, res) => {
+  try {
+    const rows = query.all("SELECT * FROM customer_badges ORDER BY required_orders ASC");
+    res.json(rows.map(b => ({
+      ...b,
+      free_delivery: Boolean(b.free_delivery),
+      has_2x1: Boolean(b.has_2x1),
+      is_active: Boolean(b.is_active),
+      apply_days: (() => { try { return JSON.parse(b.apply_days || '[]'); } catch { return []; } })()
+    })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post("/api/badges", (req, res) => {
+  try {
+    const b = req.body;
+    query.run(
+      `INSERT INTO customer_badges (name, required_orders, description, beneficio, discount_percentage, free_delivery, has_2x1, apply_days, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(name) DO UPDATE SET
+        required_orders = excluded.required_orders,
+        description = excluded.description,
+        beneficio = excluded.beneficio,
+        discount_percentage = excluded.discount_percentage,
+        free_delivery = excluded.free_delivery,
+        has_2x1 = excluded.has_2x1,
+        apply_days = excluded.apply_days,
+        is_active = excluded.is_active`,
+      [
+        b.name,
+        b.required_orders ?? 0,
+        b.description || "",
+        b.beneficio || "",
+        b.discount_percentage ?? 0,
+        b.free_delivery ? 1 : 0,
+        b.has_2x1 ? 1 : 0,
+        JSON.stringify(b.apply_days || []),
+        b.is_active !== false ? 1 : 0
+      ]
+    );
+    const updated = query.get("SELECT * FROM customer_badges WHERE name = ?", [b.name]);
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 4. Pedidos (Orders CRUD)
 app.get("/api/orders", (req, res) => {
   try {
     const rows = query.all("SELECT * FROM orders ORDER BY id DESC");
@@ -702,6 +1127,15 @@ app.put("/api/orders/:id/payment", (req, res) => {
   }
 });
 
+app.delete("/api/orders/:id", (req, res) => {
+  try {
+    query.run("DELETE FROM orders WHERE id = ? OR numero = ?", [req.params.id, req.params.id]);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 5. Configuración (Settings)
 app.get("/api/settings", (req, res) => {
   try {
@@ -721,7 +1155,7 @@ app.post("/api/settings", (req, res) => {
       `INSERT OR REPLACE INTO settings (id, razon_social, slogan, phone, address, maps_url, instagram, facebook, tiktok, logo_url, delivery_fee, free_delivery_threshold, offers_delivery, offers_pickup, offers_local, force_closed, dynamic_delivery_enabled, base_delivery_fee, price_per_km, max_delivery_radius_km)
        VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        s.razon_social ?? current.razon_social ?? "Pavés & Dulces Demo",
+        s.razon_social ?? current.razon_social ?? "Gran Sabor Bistro & Café",
         s.slogan ?? current.slogan ?? "",
         s.phone ?? current.phone ?? "",
         s.address ?? current.address ?? "",
@@ -779,6 +1213,15 @@ app.post("/api/design", (req, res) => {
 });
 
 // 6. Clientes y Fidelización
+app.get("/api/customers", (req, res) => {
+  try {
+    const rows = query.all("SELECT * FROM clientes ORDER BY ordenes_count DESC");
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("/api/customers/:telefono", (req, res) => {
   try {
     const cleanPhone = String(req.params.telefono).replace(/\D/g, "");

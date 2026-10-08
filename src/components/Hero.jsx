@@ -302,13 +302,28 @@ const Hero = ({
                   </p>
                 </div>
 
-                {/* Lado Derecho: Imagen Gastronómica + Badge Flotante */}
+                {/* Lado Derecho: Imagen Gastronómica / Video + Badge Flotante */}
                 <div className="saborio-card-banner__visual">
                   <img
                     src={activeProduct.imagen || activeProduct.image}
                     alt={activeProduct.nombre || "Postre destacado"}
                     className="saborio-banner-product-img"
                   />
+
+                  {activeProduct.video && (
+                    <video
+                      key={activeProduct.video}
+                      src={activeProduct.video}
+                      poster={activeProduct.imagen || activeProduct.image}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      className="saborio-banner-product-img saborio-banner-product-video"
+                      style={{ position: "absolute", inset: 0 }}
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    />
+                  )}
                   <div className="saborio-banner-glow" />
 
                   {/* Rating Badge Flotante (Izquierda) */}

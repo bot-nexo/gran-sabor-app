@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import MenuCard from "./MenuCard";
-import { ArrowRight, Search, X, Sparkles } from "lucide-react";
+import ProductReelModal from "./ProductReelModal";
+import { ArrowRight, Search, X, Sparkles, LayoutGrid, List } from "lucide-react";
 import Promociones from "./Promociones";
 import Combos from "./Combos";
 // import QuickGuide from "./QuickGuide";
@@ -25,6 +26,7 @@ const Menu = ({
 }) => {
   const [activeCategory, setActiveCategory] = useState("Todos");
   const [currentPromoIndex, setCurrentPromoIndex] = useState(0);
+  const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
   const promoTimerRef = useRef(null);
 
   const d = design || DEFAULT_CATALOG_DESIGN;
@@ -78,6 +80,21 @@ const Menu = ({
       "--image-aspect-ratio": (d.imageAspectRatio || "16/11").replace("/", " / "),
     };
   }, [d]);
+
+  // Clase de cuadrícula dinámica según personalización del Admin (Desktop, Mobile, Layout)
+  const gridColumnsClass = useMemo(() => {
+    if (d.cardLayout === "horizontal") {
+      return "grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5";
+    }
+    const mob = d.columnsMobile === 2 || d.columnsMobile === "2" ? "grid-cols-2" : "grid-cols-1";
+    let desk = "lg:grid-cols-3";
+    if (d.columnsDesktop === 2 || d.columnsDesktop === "2") desk = "sm:grid-cols-2 lg:grid-cols-2";
+    else if (d.columnsDesktop === 4 || d.columnsDesktop === "4") desk = "sm:grid-cols-2 lg:grid-cols-4";
+    else if (d.columnsDesktop === 1 || d.columnsDesktop === "1") desk = "sm:grid-cols-1 lg:grid-cols-1 max-w-2xl mx-auto";
+    else desk = "sm:grid-cols-2 lg:grid-cols-3";
+
+    return `grid ${mob} ${desk} gap-4 md:gap-5`;
+  }, [d.columnsDesktop, d.columnsMobile, d.cardLayout]);
 
   // Mapeo de categorías con imágenes representativas dinámicas
   const categoryImages = useMemo(() => {
@@ -426,36 +443,58 @@ const Menu = ({
               </span>
             </div>
 
-            {activeCategory !== "Todos" && (
-              <button
-                type="button"
-                onClick={() => {
-                  if (setSearchQuery) setSearchQuery("");
-                  setActiveCategory("Todos");
-                }}
-                className="catalog-reset-btn"
-              >
-                <span>Ver todos</span>
-                <ArrowRight size={12} />
-              </button>
-            )}
+            <div className="catalog-header-actions">
+              {/* Interruptor de Vista: Cuadrícula vs Lista (Estilo Acerkt) */}
+              <div className="catalog-view-toggle" role="group" aria-label="Cambiar vista de catálogo">
+                <button
+                  type="button"
+                  className={`catalog-view-btn ${viewMode === "grid" ? "catalog-view-btn--active" : ""}`}
+                  onClick={() => setViewMode("grid")}
+                  title="Vista en Tarjetas / Cuadrícula"
+                  aria-label="Vista en Cuadrícula"
+                >
+                  <LayoutGrid size={15} />
+                  <span className="hidden sm:inline">Tarjetas</span>
+                </button>
+                <button
+                  type="button"
+                  className={`catalog-view-btn ${viewMode === "list" ? "catalog-view-btn--active" : ""}`}
+                  onClick={() => setViewMode("list")}
+                  title="Vista en Lista Compacta"
+                  aria-label="Vista en Lista"
+                >
+                  <List size={15} />
+                  <span className="hidden sm:inline">Lista</span>
+                </button>
+              </div>
+
+              {activeCategory !== "Todos" && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (setSearchQuery) setSearchQuery("");
+                    setActiveCategory("Todos");
+                  }}
+                  className="catalog-reset-btn"
+                >
+                  <span>Ver todos</span>
+                  <ArrowRight size={12} />
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* Grid de Productos */}
+          {/* Grid / Lista de Productos */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            <div className={viewMode === "list" ? "catalog-list-view flex flex-col gap-3" : gridColumnsClass}>
               {filteredProducts.map((product) => (
                 <MenuCard
                   key={product.id || product.nombre}
                   product={product}
-                  isDetailsOpen={selectedProduct?.id === product.id}
-                  onToggleDetails={() =>
-                    setSelectedProduct(
-                      selectedProduct?.id === product.id ? null : product
-                    )
-                  }
+                  viewMode={viewMode}
+                  onToggleDetails={(prod) => setSelectedProduct(prod)}
                   onAddToCart={addToCart}
-                  design={d}
+                  design={viewMode === "list" ? { ...d, cardLayout: "list" } : d}
                   settings={settings}
                 />
               ))}
@@ -484,6 +523,17 @@ const Menu = ({
         </div>
 
       </div>
+
+      {/* ── Modal Inmersivo de Producto / Reel (Estilo Acerkt Stories) ─────── */}
+      {selectedProduct && (
+        <ProductReelModal
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          onAddToCart={addToCart}
+          design={d}
+          settings={settings}
+        />
+      )}
     </section>
   );
 };
