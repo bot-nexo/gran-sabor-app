@@ -6,9 +6,7 @@
 //   - Search Box: https://docs.mapbox.com/api/search/search-box/
 //   - Matrix:     https://docs.mapbox.com/api/navigation/matrix/
 
-const MAPBOX_TOKEN =
-  import.meta.env.VITE_MAPBOX_TOKEN ||
-  "pk.eyJ1IjoianVhbmRhLWJvdC1jaGljYS0xN2duMjkiLCJhIjoiY211em00aHUzMHRzazJ5b2Y4aG5mZmZxbiJ9.WElVWjKIyJOZ0f1fBb0l_w";
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || "";
 
 export const isMapboxConfigured = Boolean(MAPBOX_TOKEN);
 
