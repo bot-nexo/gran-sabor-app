@@ -47,44 +47,56 @@ const formatMinutosAHora = (minutosTotales, format24 = true) => {
   return `${horas12}:${minsPadded} ${period}`;
 };
 
+const DAY_MAP = {
+  "domingo": 0, "dom": 0, "0": 0, 0: 0,
+  "lunes": 1, "lun": 1, "1": 1, 1: 1,
+  "martes": 2, "mar": 2, "2": 2, 2: 2,
+  "miércoles": 3, "miercoles": 3, "mié": 3, "mie": 3, "3": 3, 3: 3,
+  "jueves": 4, "jue": 4, "4": 4, 4: 4,
+  "viernes": 5, "vie": 5, "5": 5, 5: 5,
+  "sábado": 6, "sabado": 6, "sáb": 6, "sab": 6, "6": 6, 6: 6
+};
+
+const normalizeDaysArray = (days) => {
+  if (!days) return [1, 2, 3, 4, 5, 6, 0];
+  let parsed = days;
+  if (typeof days === "string") {
+    try {
+      if (days.trim().startsWith("[")) {
+        parsed = JSON.parse(days);
+      } else {
+        parsed = [1, 2, 3, 4, 5, 6, 0];
+      }
+    } catch {
+      parsed = [1, 2, 3, 4, 5, 6, 0];
+    }
+  }
+  if (!Array.isArray(parsed)) return [1, 2, 3, 4, 5, 6, 0];
+  const numArr = parsed
+    .map((d) => DAY_MAP[String(d).toLowerCase().trim()])
+    .filter((v) => v !== undefined);
+  return Array.from(new Set(numArr));
+};
+
 /**
  * Parsea el día/array de días en un texto legible
  */
 export const formatearDias = (days) => {
   if (!days) return "";
-  
-  let parsedDays = days;
-  if (typeof days === "string") {
-    try {
-      if (days.trim().startsWith("[")) {
-        parsedDays = JSON.parse(days);
-      } else {
-        // Fallback a Lun-Sáb para textos legacy, tal como hace el panel admin
-        parsedDays = [1, 2, 3, 4, 5, 6];
-      }
-    } catch (e) {
-      parsedDays = [1, 2, 3, 4, 5, 6];
-    }
-  }
+  const arr = normalizeDaysArray(days);
+  if (arr.length === 7) return "Todos los días";
 
-  if (Array.isArray(parsedDays)) {
-    const arr = [...parsedDays].map(Number);
-    if (arr.length === 7) return "Todos los días";
-    
-    const includesDom = arr.includes(0);
-    const includesSab = arr.includes(6);
-    
-    if (arr.length === 5 && !includesDom && !includesSab) return "Lun - Vie";
-    if (arr.length === 6 && !includesDom) return "Lun - Sáb";
-    
-    const map = { 1: "Lun", 2: "Mar", 3: "Mié", 4: "Jue", 5: "Vie", 6: "Sáb", 0: "Dom" };
-    // Ordenar de Lunes a Domingo
-    const displayOrder = [1, 2, 3, 4, 5, 6, 0];
-    const ordered = displayOrder.filter(d => arr.includes(d));
-    
-    return ordered.map((d) => map[d] || d).join(", ");
-  }
-  return String(days);
+  const includesDom = arr.includes(0);
+  const includesSab = arr.includes(6);
+
+  if (arr.length === 5 && !includesDom && !includesSab) return "Lun - Vie";
+  if (arr.length === 6 && !includesDom) return "Lun - Sáb";
+
+  const map = { 1: "Lun", 2: "Mar", 3: "Mié", 4: "Jue", 5: "Vie", 6: "Sáb", 0: "Dom" };
+  const displayOrder = [1, 2, 3, 4, 5, 6, 0];
+  const ordered = displayOrder.filter((d) => arr.includes(d));
+
+  return ordered.map((d) => map[d] || d).join(", ");
 };
 
 /**
@@ -100,24 +112,8 @@ export const estaAbiertoSegunHorario = (settings = {}) => {
   const ahora = new Date();
   const todayDay = ahora.getDay(); // 0 is Sunday, 1 is Monday, etc.
 
-  let esDiaAbierto = true;
-  if (settings.day1) {
-    let parsedDays = settings.day1;
-    if (typeof parsedDays === "string") {
-      try {
-        if (parsedDays.trim().startsWith("[")) {
-          parsedDays = JSON.parse(parsedDays);
-        } else {
-          parsedDays = [1, 2, 3, 4, 5, 6];
-        }
-      } catch (e) {
-        parsedDays = [1, 2, 3, 4, 5, 6];
-      }
-    }
-    if (Array.isArray(parsedDays)) {
-      esDiaAbierto = parsedDays.map(Number).includes(todayDay);
-    }
-  }
+  const activeDays = normalizeDaysArray(settings.day1);
+  const esDiaAbierto = activeDays.includes(todayDay);
 
   if (!p.ok) {
     // Sin horario legible → se asume abierto en ese día, salvo cierre manual
@@ -145,9 +141,8 @@ export const estaAbiertoSegunHorario = (settings = {}) => {
     
   const abiertoReal = esDiaAbierto && dentro && !fuerzaCierre;
 
-  // Uso con tu objeto:
-  const openHourStr = formatMinutosAHora(p.apertura, true);   // Output: "2:00 PM"
-  const closeHourStr = formatMinutosAHora(p.cierre, true); // Output: "8:00 PM"
+  const openHourStr = formatMinutosAHora(p.apertura, true);
+  const closeHourStr = formatMinutosAHora(p.cierre, true);
   
   return {
     abierto: abiertoReal,

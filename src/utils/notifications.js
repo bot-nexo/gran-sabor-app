@@ -1,4 +1,4 @@
-import { getSettings } from "../data/dataSource";
+import { getSettings, findCustomerByPhone } from "../data/dataSource";
 import { supabase } from "../services/supabaseClient";
 import { formatCOP } from "./price";
 
@@ -90,13 +90,13 @@ export const sendEmail = async (to, subject, html, fromName) => {
       return { sent: true };
     } catch (err) {
       console.error("[EmailJS] Falló envío:", err);
-      // Fallback a Supabase/Resend
-      return sendEmailResend(to, subject, html, fromName);
+      // Fallback a Supabase/Resend si está disponible
+      return sendEmailResend(to, subject, html, fromName).catch(() => ({ sent: false, reason: "emailjs-fallo" }));
     }
   }
 
   // 2. Fallback a Resend via Supabase Edge Function
-  return sendEmailResend(to, subject, html, fromName);
+  return sendEmailResend(to, subject, html, fromName).catch(() => ({ sent: false, reason: "sin-servicio-email" }));
 };
 
 export const notificarCambioEstado = async (pedido, nuevoEstado) => {
@@ -109,22 +109,16 @@ export const notificarCambioEstado = async (pedido, nuevoEstado) => {
 
   let emailParaEnviar = pedido.email;
 
-  // Si el pedido no trae el email, lo buscamos en la tabla clientes usando el teléfono
+  // Si el pedido no trae el email, lo buscamos en la tabla clientes de SQLite usando el teléfono
   if (!emailParaEnviar && pedido.telefono) {
     const cleanPhone = String(pedido.telefono).replace(/\D/g, "");
     try {
-      const { data, error } = await supabase
-        .from("clientes")
-        .select("email")
-        .eq("telefono", cleanPhone)
-        .maybeSingle();
-      if (error) throw error;
-
-      if (data && data.email) {
-        emailParaEnviar = data.email;
+      const clienteData = await findCustomerByPhone(cleanPhone).catch(() => null);
+      if (clienteData && clienteData.email) {
+        emailParaEnviar = clienteData.email;
       }
     } catch (err) {
-      throw new Error(`No se pudo consultar el correo del cliente: ${err.message}`);
+      console.warn("No se pudo consultar el correo del cliente desde SQLite:", err.message);
     }
   }
 

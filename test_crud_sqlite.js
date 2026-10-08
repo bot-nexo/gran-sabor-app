@@ -241,17 +241,35 @@ async function runValidation() {
     });
     const payData = await resPay.json();
     if (payData.estado_pago !== "pagado") throw new Error("No actualizó estado de pago");
+
+    // Verificar que el correo del cliente y el del pedido se guardaron en SQLite
+    const resOrders = await fetch(`${BASE_URL}/api/orders`);
+    const orders = await resOrders.json();
+    const createdOrd = orders.find(o => o.id === testOrderId);
+    if (!createdOrd) throw new Error("Pedido no encontrado en lista SQLite");
+
+    const resCustomer = await fetch(`${BASE_URL}/api/customers/3009998877`);
+    const custData = await resCustomer.json();
+    if (!custData.telefono) throw new Error("No devolvió datos del cliente de SQLite");
   });
 
   // 9. Configuración y Diseño
-  await test("CRUD Configuración y Diseño: Guardar y Leer", async () => {
+  await test("CRUD Configuración y Diseño: Guardar y Leer (plan_emails, day1, hours1)", async () => {
     const resSet = await fetch(`${BASE_URL}/api/settings`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ razon_social: "Gran Sabor SQLite Validated", phone: "3001234567" })
+      body: JSON.stringify({
+        razon_social: "Gran Sabor SQLite Validated",
+        phone: "3001234567",
+        plan_emails: true,
+        hours1: "12:00 PM - 10:00 PM",
+        day1: ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]
+      })
     });
     const setData = await resSet.json();
     if (setData.razon_social !== "Gran Sabor SQLite Validated") throw new Error("No actualizó settings");
+    if (setData.plan_emails !== 1 && setData.plan_emails !== true) throw new Error("plan_emails no se guardó en SQLite");
+    if (!setData.day1) throw new Error("day1 no se guardó en SQLite");
 
     const resDes = await fetch(`${BASE_URL}/api/design`, {
       method: "POST",

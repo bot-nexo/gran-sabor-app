@@ -143,6 +143,7 @@ function initSchema() {
       numero INTEGER,
       nombre TEXT,
       telefono TEXT,
+      email TEXT DEFAULT '',
       direccion TEXT,
       unidad TEXT,
       apto TEXT,
@@ -187,7 +188,8 @@ function initSchema() {
       use_customer_badges INTEGER DEFAULT 1,
       bank_accounts TEXT DEFAULT '[]',
       day1 TEXT DEFAULT '["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]',
-      hours1 TEXT DEFAULT '12:00 PM - 10:00 PM'
+      hours1 TEXT DEFAULT '12:00 PM - 10:00 PM',
+      plan_emails INTEGER DEFAULT 1
     );
 
     CREATE TABLE IF NOT EXISTS catalog_design (
@@ -199,6 +201,7 @@ function initSchema() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       telefono TEXT UNIQUE,
       nombre TEXT,
+      email TEXT DEFAULT '',
       ordenes_count INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
@@ -223,6 +226,9 @@ function initSchema() {
 
   try { query.exec("ALTER TABLE products ADD COLUMN video TEXT DEFAULT ''"); } catch {}
   try { query.exec("ALTER TABLE products ADD COLUMN tags TEXT DEFAULT '[]'"); } catch {}
+  try { query.exec("ALTER TABLE settings ADD COLUMN plan_emails INTEGER DEFAULT 1"); } catch {}
+  try { query.exec("ALTER TABLE orders ADD COLUMN email TEXT DEFAULT ''"); } catch {}
+  try { query.exec("ALTER TABLE clientes ADD COLUMN email TEXT DEFAULT ''"); } catch {}
 
   try {
     query.run("UPDATE products SET video = '/videos/cheesecake.mp4', tags = '[\"⭐ Especial del Chef\", \"🍓 Fruta Fresca\", \"⏱️ 10 min\"]' WHERE nombre LIKE '%Cheesecake%' AND (video IS NULL OR video = '')");
@@ -1062,12 +1068,13 @@ app.post("/api/orders", (req, res) => {
     const nextNumero = (last?.maxNum || 100) + 1;
 
     const result = query.run(
-      `INSERT INTO orders (numero, nombre, telefono, direccion, unidad, apto, observaciones, tipo_entrega, tipo_pedido, mesa, pago, subtotal, delivery_fee, descuento, total, items, estado, estado_pago)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'nuevo', 'pendiente')`,
+      `INSERT INTO orders (numero, nombre, telefono, email, direccion, unidad, apto, observaciones, tipo_entrega, tipo_pedido, mesa, pago, subtotal, delivery_fee, descuento, total, items, estado, estado_pago)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'nuevo', 'pendiente')`,
       [
         nextNumero,
         o.nombre || "",
         o.telefono || "",
+        o.email || "",
         o.direccion || "",
         o.unidad || "",
         o.apto || "",
@@ -1089,9 +1096,15 @@ app.post("/api/orders", (req, res) => {
       const cleanPhone = String(o.telefono).replace(/\D/g, "");
       const cliente = query.get("SELECT * FROM clientes WHERE telefono = ?", [cleanPhone]);
       if (cliente) {
-        query.run("UPDATE clientes SET ordenes_count = ordenes_count + 1, nombre = COALESCE(?, nombre) WHERE telefono = ?", [o.nombre, cleanPhone]);
+        query.run(
+          "UPDATE clientes SET ordenes_count = ordenes_count + 1, nombre = COALESCE(NULLIF(?, ''), nombre), email = CASE WHEN ? != '' THEN ? ELSE email END WHERE telefono = ?",
+          [o.nombre || "", o.email || "", o.email || "", cleanPhone]
+        );
       } else {
-        query.run("INSERT INTO clientes (telefono, nombre, ordenes_count) VALUES (?, ?, 1)", [cleanPhone, o.nombre || "Cliente"]);
+        query.run(
+          "INSERT INTO clientes (telefono, nombre, email, ordenes_count) VALUES (?, ?, ?, 1)",
+          [cleanPhone, o.nombre || "Cliente", o.email || ""]
+        );
       }
     }
 
@@ -1152,28 +1165,40 @@ app.post("/api/settings", (req, res) => {
     const current = query.get("SELECT * FROM settings WHERE id = 1") || {};
 
     query.run(
-      `INSERT OR REPLACE INTO settings (id, razon_social, slogan, phone, address, maps_url, instagram, facebook, tiktok, logo_url, delivery_fee, free_delivery_threshold, offers_delivery, offers_pickup, offers_local, force_closed, dynamic_delivery_enabled, base_delivery_fee, price_per_km, max_delivery_radius_km)
-       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT OR REPLACE INTO settings (
+        id, razon_social, slogan, phone, address, maps_url, instagram, facebook, tiktok, logo_url,
+        delivery_fee, free_delivery_threshold, offers_delivery, offers_pickup, offers_local, force_closed,
+        dynamic_delivery_enabled, store_lat, store_lng, base_delivery_fee, price_per_km, max_delivery_radius_km,
+        use_customer_badges, bank_accounts, day1, hours1, plan_emails
+      )
+       VALUES (1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        s.razon_social ?? current.razon_social ?? "Gran Sabor Bistro & Café",
+        s.razon_social ?? s.razonSocial ?? current.razon_social ?? "Gran Sabor Bistro & Café",
         s.slogan ?? current.slogan ?? "",
         s.phone ?? current.phone ?? "",
         s.address ?? current.address ?? "",
-        s.maps_url ?? current.maps_url ?? "",
+        s.maps_url ?? s.mapsGoogle ?? current.maps_url ?? "",
         s.instagram ?? current.instagram ?? "",
         s.facebook ?? current.facebook ?? "",
         s.tiktok ?? current.tiktok ?? "",
-        s.logo_url ?? current.logo_url ?? "",
-        s.delivery_fee ?? current.delivery_fee ?? 0,
-        s.free_delivery_threshold ?? current.free_delivery_threshold ?? 0,
-        s.offers_delivery !== undefined ? (s.offers_delivery ? 1 : 0) : (current.offers_delivery ?? 1),
-        s.offers_pickup !== undefined ? (s.offers_pickup ? 1 : 0) : (current.offers_pickup ?? 1),
-        s.offers_local !== undefined ? (s.offers_local ? 1 : 0) : (current.offers_local ?? 1),
-        s.force_closed !== undefined ? (s.force_closed ? 1 : 0) : (current.force_closed ?? 0),
-        s.dynamic_delivery_enabled !== undefined ? (s.dynamic_delivery_enabled ? 1 : 0) : (current.dynamic_delivery_enabled ?? 0),
-        s.base_delivery_fee ?? current.base_delivery_fee ?? 3000,
-        s.price_per_km ?? current.price_per_km ?? 1500,
-        s.max_delivery_radius_km ?? current.max_delivery_radius_km ?? 15
+        s.logo_url ?? s.logoUrl ?? current.logo_url ?? "",
+        s.delivery_fee ?? s.deliveryFee ?? current.delivery_fee ?? 0,
+        s.free_delivery_threshold ?? s.freeDeliveryThreshold ?? current.free_delivery_threshold ?? 0,
+        s.offers_delivery !== undefined ? (s.offers_delivery ? 1 : 0) : (s.offersDelivery !== undefined ? (s.offersDelivery ? 1 : 0) : (current.offers_delivery ?? 1)),
+        s.offers_pickup !== undefined ? (s.offers_pickup ? 1 : 0) : (s.offersPickup !== undefined ? (s.offersPickup ? 1 : 0) : (current.offers_pickup ?? 1)),
+        s.offers_local !== undefined ? (s.offers_local ? 1 : 0) : (s.offersLocal !== undefined ? (s.offersLocal ? 1 : 0) : (current.offers_local ?? 1)),
+        s.force_closed !== undefined ? (s.force_closed ? 1 : 0) : (s.forceClosed !== undefined ? (s.forceClosed ? 1 : 0) : (current.force_closed ?? 0)),
+        s.dynamic_delivery_enabled !== undefined ? (s.dynamic_delivery_enabled ? 1 : 0) : (s.dynamicDeliveryEnabled !== undefined ? (s.dynamicDeliveryEnabled ? 1 : 0) : (current.dynamic_delivery_enabled ?? 0)),
+        s.store_lat ?? s.storeLat ?? current.store_lat ?? null,
+        s.store_lng ?? s.storeLng ?? current.store_lng ?? null,
+        s.base_delivery_fee ?? s.baseDeliveryFee ?? current.base_delivery_fee ?? 3000,
+        s.price_per_km ?? s.pricePerKm ?? current.price_per_km ?? 1500,
+        s.max_delivery_radius_km ?? s.maxDeliveryRadiusKm ?? current.max_delivery_radius_km ?? 15,
+        s.use_customer_badges !== undefined ? (s.use_customer_badges ? 1 : 0) : (s.useCustomerBadges !== undefined ? (s.useCustomerBadges ? 1 : 0) : (current.use_customer_badges ?? 1)),
+        typeof s.bank_accounts === 'string' ? s.bank_accounts : (s.bankAccounts ? JSON.stringify(s.bankAccounts) : (current.bank_accounts || '[]')),
+        typeof s.day1 === 'string' ? s.day1 : (s.day1 ? JSON.stringify(s.day1) : (current.day1 || '["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"]')),
+        s.hours1 ?? current.hours1 ?? '12:00 PM - 10:00 PM',
+        s.plan_emails !== undefined ? (s.plan_emails ? 1 : 0) : (s.planEmails !== undefined ? (s.planEmails ? 1 : 0) : (current.plan_emails ?? 1))
       ]
     );
     const updated = query.get("SELECT * FROM settings WHERE id = 1");
@@ -1226,7 +1251,7 @@ app.get("/api/customers/:telefono", (req, res) => {
   try {
     const cleanPhone = String(req.params.telefono).replace(/\D/g, "");
     const row = query.get("SELECT * FROM clientes WHERE telefono = ?", [cleanPhone]);
-    res.json(row || { telefono: cleanPhone, nombre: "Cliente", ordenes_count: 0 });
+    res.json(row || { telefono: cleanPhone, nombre: "Cliente", email: "", ordenes_count: 0 });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1234,17 +1259,18 @@ app.get("/api/customers/:telefono", (req, res) => {
 
 app.post("/api/customers", (req, res) => {
   try {
-    const { telefono, nombre } = req.body;
+    const { telefono, nombre, email } = req.body;
     const cleanPhone = String(telefono).replace(/\D/g, "");
     const existing = query.get("SELECT * FROM clientes WHERE telefono = ?", [cleanPhone]);
     if (existing) {
-      if (nombre && nombre !== existing.nombre) {
-        query.run("UPDATE clientes SET nombre = ? WHERE telefono = ?", [nombre, cleanPhone]);
-      }
+      query.run(
+        "UPDATE clientes SET nombre = COALESCE(NULLIF(?, ''), nombre), email = CASE WHEN ? != '' THEN ? ELSE email END WHERE telefono = ?",
+        [nombre || "", email || "", email || "", cleanPhone]
+      );
       return res.json(query.get("SELECT * FROM clientes WHERE telefono = ?", [cleanPhone]));
     }
-    query.run("INSERT INTO clientes (telefono, nombre, ordenes_count) VALUES (?, ?, 0)", [cleanPhone, nombre || "Cliente"]);
-    res.json({ telefono: cleanPhone, nombre: nombre || "Cliente", ordenes_count: 0 });
+    query.run("INSERT INTO clientes (telefono, nombre, email, ordenes_count) VALUES (?, ?, ?, 0)", [cleanPhone, nombre || "Cliente", email || ""]);
+    res.json({ telefono: cleanPhone, nombre: nombre || "Cliente", email: email || "", ordenes_count: 0 });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

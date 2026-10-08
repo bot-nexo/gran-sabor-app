@@ -108,7 +108,7 @@ const normalizeSettings = (row) => {
     offersPickup: row.offers_pickup !== false && row.offers_pickup !== 0,
     offersLocal: row.offers_local !== false && row.offers_local !== 0,
     forceClosed: Boolean(row.force_closed),
-    bankAccounts: [],
+    bankAccounts: (() => { try { return typeof row.bank_accounts === 'string' ? JSON.parse(row.bank_accounts) : (row.bank_accounts || []); } catch { return []; } })(),
     isActive: true,
     canChangePassword: true,
     plan_adiciones: true,
@@ -118,7 +118,7 @@ const normalizeSettings = (row) => {
     plan_fidelizacion: true,
     plan_configuracion: true,
     plan_domicilio_dinamico: true,
-    plan_emails: false,
+    plan_emails: row.plan_emails !== false && row.plan_emails !== 0 && row.plan_emails !== "0",
     plan_colaboradores: true,
     plan_mesas: true,
     storeLat: row.store_lat ?? null,
@@ -127,7 +127,7 @@ const normalizeSettings = (row) => {
     pricePerKm: row.price_per_km ?? 1500,
     maxDeliveryRadiusKm: row.max_delivery_radius_km ?? 15,
     dynamicDeliveryEnabled: Boolean(row.dynamic_delivery_enabled),
-    useCustomerBadges: true,
+    useCustomerBadges: row.use_customer_badges !== false && row.use_customer_badges !== 0,
   };
 };
 
@@ -523,6 +523,7 @@ export async function createOrder(deliveryData, cart, totals) {
   const payload = {
     nombre: deliveryData.nombre,
     telefono: deliveryData.telefono,
+    email: deliveryData.email || "",
     direccion: deliveryData.direccion || "",
     unidad: deliveryData.unidad || "",
     apto: deliveryData.apto || "",
@@ -656,17 +657,17 @@ export async function getStoreRatingStats() {
   return { average: 4.9, total: 18 };
 }
 
-export async function getOrCreateCustomer(nombre, telefono) {
-  if (!telefono) return { nombre: nombre || "Cliente", telefono: "", pedidos_count: 0 };
+export async function getOrCreateCustomer(nombre, telefono, address = null, email = "") {
+  if (!telefono) return { nombre: nombre || "Cliente", telefono: "", email: email || "", pedidos_count: 0 };
   try {
     const res = await fetch("/api/customers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre, telefono })
+      body: JSON.stringify({ nombre, telefono, email: email || "" })
     });
     return await res.json();
   } catch {
-    return { nombre: nombre || "Cliente", telefono, pedidos_count: 1 };
+    return { nombre: nombre || "Cliente", telefono, email: email || "", pedidos_count: 1 };
   }
 }
 
