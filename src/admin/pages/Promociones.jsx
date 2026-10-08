@@ -33,35 +33,35 @@ const newCombo = () => ({
 });
 
 // ── Image Uploader Component ──────────────────────────────────────────────────
-const ImageUploader = ({ label, url, onUpload, defaultName }) => {
-  const [uploading, setUploading] = useState(false);
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      setUploading(true);
-      const newUrl = await uploadProductImage(defaultName, file, url);
-      onUpload(newUrl);
-    } catch (err) {
-      Swal.fire({ icon: "error", title: "Error al subir", text: err.message, toast: true, position: "top-end" });
-    } finally {
-      setUploading(false);
+const ImageUploader = ({ label, url }) => {
+  const handleClick = (e) => {
+    if (e) {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.target && e.target.value) e.target.value = "";
     }
+    Swal.fire({
+      icon: "info",
+      title: "Modo Demostración",
+      text: "En esta versión demo no está permitida la carga o modificación de imágenes.",
+      confirmButtonColor: "#3D2314",
+    });
   };
+
   return (
     <label className="admin-field" style={{ marginBottom: 0 }}>
-      <span className="admin-field__label" style={{ fontSize: ".72rem", display: "flex", justifyContent: "space-between" }}>
-        {label} {uploading && <span style={{ color: "#ffcc00" }}>Subiendo...</span>}
+      <span className="admin-field__label" style={{ fontSize: ".72rem" }}>
+        {label}
       </span>
       <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          disabled={uploading}
+        <button
+          type="button"
+          onClick={handleClick}
           className="admin-field__input"
-          style={{ padding: "0.3rem", fontSize: ".75rem" }}
-        />
+          style={{ padding: "0.35rem 0.75rem", fontSize: ".75rem", background: "rgba(255,255,255,0.04)", border: "1px dashed rgba(255,255,255,0.2)", color: "#bda899", textAlign: "left", cursor: "pointer", borderRadius: "8px", flex: 1 }}
+        >
+          📷 Cargar imagen (Demo protegida)
+        </button>
         {url && (
           <img src={url} alt="Preview" style={{ width: "34px", height: "34px", borderRadius: "6px", objectFit: "cover", flexShrink: 0, border: "1px solid rgba(255,255,255,0.2)" }} />
         )}

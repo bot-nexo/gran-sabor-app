@@ -91,15 +91,22 @@ const ProductFormModal = ({
 
   const set = (campo, valor) => setForm((f) => ({ ...f, [campo]: valor }));
 
-  const elegirImagen = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      Swal.fire({ icon: "warning", text: "Selecciona un archivo de imagen.", confirmButtonColor: "#3D2314" });
-      return;
+  const avisoDemoImagen = (e) => {
+    if (e) {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.target && e.target.value) e.target.value = "";
     }
-    setNuevaImagen(file);
-    setVistaPrevia(URL.createObjectURL(file));
+    Swal.fire({
+      icon: "info",
+      title: "Modo Demostración",
+      text: "En esta versión demo no está permitida la carga o modificación de imágenes.",
+      confirmButtonColor: "#3D2314",
+    });
+  };
+
+  const elegirImagen = (e) => {
+    avisoDemoImagen(e);
   };
 
   const guardar = async (e) => {
@@ -207,13 +214,16 @@ const ProductFormModal = ({
           {/* Imagen */}
           <div className="adm-modal__imagen">
             <img src={vistaPrevia} alt="Vista previa" className="adm-modal__preview" />
-            <label className="admin-btn-ghost adm-modal__subir">
+            <button
+              type="button"
+              className="admin-btn-ghost adm-modal__subir"
+              onClick={avisoDemoImagen}
+            >
               <ImagePlus size={15} />
               {nuevaImagen ? "Cambiar foto" : imagenUrlPrevio ? "Reemplazar foto" : "Subir foto"}
-              <input type="file" accept="image/*" hidden onChange={elegirImagen} />
-            </label>
+            </button>
             <p className="adm-modal__nota-imagen">
-              Se comprime automáticamente (máx 1000px).
+              Imágenes de muestra predeterminadas en el modo demo.
             </p>
           </div>
 

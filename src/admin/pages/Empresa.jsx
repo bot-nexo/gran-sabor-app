@@ -131,21 +131,26 @@ const Empresa = () => {
   const set = (clave, valor) => setForm((f) => ({ ...f, [clave]: valor }));
 
   // ── Selección de logo ──────────────────────────────────────────────────────
-  const elegirLogo = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      Swal.fire({ icon: "warning", text: "Selecciona un archivo de imagen.", confirmButtonColor: "#3D2314" });
-      return;
+  const avisoDemoImagen = (e) => {
+    if (e) {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      if (e.target && e.target.value) e.target.value = "";
     }
-    setNuevoLogo(file);
-    setVistaPrevia(URL.createObjectURL(file));
+    Swal.fire({
+      icon: "info",
+      title: "Modo Demostración",
+      text: "En esta versión demo no está permitida la carga o modificación de imágenes.",
+      confirmButtonColor: "#3D2314",
+    });
   };
 
-  const quitarLogo = () => {
-    setNuevoLogo(null);
-    setVistaPrevia(null);
-    if (inputLogoRef.current) inputLogoRef.current.value = "";
+  const elegirLogo = (e) => {
+    avisoDemoImagen(e);
+  };
+
+  const quitarLogo = (e) => {
+    avisoDemoImagen(e);
   };
 
   // ── Guardar ────────────────────────────────────────────────────────────────
@@ -234,7 +239,7 @@ const Empresa = () => {
                       <button
                         type="button"
                         className="admin-btn-ghost adm-logo-preview__cambiar"
-                        onClick={() => inputLogoRef.current?.click()}
+                        onClick={avisoDemoImagen}
                       >
                         <Upload size={14} /> Cambiar logo
                       </button>
@@ -242,7 +247,7 @@ const Empresa = () => {
                         type="button"
                         className="adm-icono-btn adm-icono-btn--peligro"
                         title="Quitar logo"
-                        onClick={quitarLogo}
+                        onClick={avisoDemoImagen}
                       >
                         <X size={14} />
                       </button>
@@ -252,20 +257,13 @@ const Empresa = () => {
                   <button
                     type="button"
                     className="adm-logo-drop"
-                    onClick={() => inputLogoRef.current?.click()}
+                    onClick={avisoDemoImagen}
                   >
                     <Upload size={22} className="adm-logo-drop__icon" />
                     <span>Subir logo</span>
-                    <small>PNG, JPG, WEBP</small>
+                    <small>PNG, JPG, WEBP (Demo)</small>
                   </button>
                 )}
-                <input
-                  ref={inputLogoRef}
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  onChange={elegirLogo}
-                />
               </div>
             </label>
 

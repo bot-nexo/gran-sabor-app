@@ -74,50 +74,24 @@ export async function deleteProductImage(url) {
  * @param {string} [previousUrl] - imagen actual del producto (se elimina)
  * @returns {Promise<string>} URL pública de la nueva imagen
  */
+import Swal from "sweetalert2";
+
 export async function uploadProductImage(nombreProducto, file, previousUrl = "") {
-  if (!isSupabaseConfigured) throw new Error("Supabase no está configurado");
-
-  const blob = await compressImage(file);
-  const path = `productos/${slugify(nombreProducto) || "producto"}-${Date.now()}.jpg`;
-
-  const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
-    contentType: "image/jpeg",
-    cacheControl: "31536000", // 1 año: el nombre lleva timestamp → sin caché obsoleta
+  Swal.fire({
+    icon: "info",
+    title: "Modo Demostración",
+    text: "En esta versión demo no está permitida la carga o modificación de imágenes.",
+    confirmButtonColor: "#3D2314",
   });
-  if (error) throw error;
-
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-
-  // Limpieza: la imagen anterior fuera del bucket (ahorro en capa gratuita)
-  if (previousUrl && previousUrl !== data.publicUrl) {
-    deleteProductImage(previousUrl);
-  }
-
-  return data.publicUrl;
+  return previousUrl || "";
 }
 
-/**
- * Sube el logo del negocio (comprimido) y devuelve su URL pública.
- * Si ya había un logo anterior en el bucket, se elimina (igual que productos).
- */
 export async function uploadLogoImage(file, previousUrl = "") {
-  if (!isSupabaseConfigured) throw new Error("Supabase no está configurado");
-
-  const blob = await compressImage(file, 400, 0.85); // logo más pequeño → 400px max
-  const path = `logos/logo-negocio-${Date.now()}.jpg`;
-
-  const { error } = await supabase.storage.from(BUCKET).upload(path, blob, {
-    contentType: "image/jpeg",
-    cacheControl: "31536000",
+  Swal.fire({
+    icon: "info",
+    title: "Modo Demostración",
+    text: "En esta versión demo no está permitida la carga o modificación de imágenes.",
+    confirmButtonColor: "#3D2314",
   });
-  if (error) throw error;
-
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(path);
-
-  // Eliminar logo anterior si existía
-  if (previousUrl && previousUrl !== data.publicUrl) {
-    deleteProductImage(previousUrl); // reutilizamos la misma función (mismo bucket)
-  }
-
-  return data.publicUrl;
+  return previousUrl || "";
 }
