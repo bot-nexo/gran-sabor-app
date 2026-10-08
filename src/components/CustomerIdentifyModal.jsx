@@ -143,12 +143,10 @@ const CustomerIdentifyModal = ({ isOpen, onClose, onSaveCustomer, currentCustome
           </h2>
           <p className="customer-modal-subtitle">
             {step === 1
-              ? loyaltyOn
-                ? "Ingresa tu número de WhatsApp para consultar tu perfil o ingresar al menú."
-                : "Ingresa tu número de WhatsApp para identificarte e ingresar al menú."
+              ? "📱 Modo Demo: Ingresa tu WhatsApp para recibir el pedido de ejemplo en tu chat y activar tus beneficios."
               : step === 3
                 ? loyaltyOn ? "Estos son tus beneficios y tu nivel actual." : "Ya estás identificado, puedes hacer tu pedido."
-                : "No encontramos registros previos con este número. Completa tu nombre para crear tu perfil."}
+                : "Completa tus datos para recibir el comprobante y el seguimiento del pedido por correo."}
           </p>
         </div>
 
@@ -311,7 +309,7 @@ const CustomerIdentifyModal = ({ isOpen, onClose, onSaveCustomer, currentCustome
                 />
               </div>
               <span className="customer-field-hint">
-                🔒 Tu número de WhatsApp es tu identificador único en la BD.
+                💡 Ingresa tu número de WhatsApp real para ver cómo te llega la confirmación del pedido de prueba y las notificaciones a tu celular.
               </span>
             </div>
 
@@ -368,12 +366,15 @@ const CustomerIdentifyModal = ({ isOpen, onClose, onSaveCustomer, currentCustome
                 <input
                   type="email"
                   className="customer-input"
-                  placeholder="Ej. correo@ejemplo.com"
+                  placeholder="Ej. tu-correo@ejemplo.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
               </div>
+              <span className="customer-field-hint">
+                📧 Te enviaremos el comprobante del pedido y los avisos de estado por correo.
+              </span>
             </div>
 
             <div className="customer-field-group">

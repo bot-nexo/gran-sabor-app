@@ -63,7 +63,7 @@ const AdminLayout = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const handleLogout = async () => {
-    
+
     await logoutAdmin();
     navigate("/admin/login", { replace: true });
   };

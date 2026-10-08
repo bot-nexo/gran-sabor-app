@@ -61,7 +61,7 @@ export default function DemoToolbar() {
       aria-label="Barra de control de demostración"
       style={{
         position: "fixed",
-        top: minimized ? "-46px" : "12px",
+        top: minimized ? "-20px" : "60px",
         right: "16px",
         zIndex: 99999,
         background: "rgba(22, 14, 10, 0.95)",
@@ -98,7 +98,7 @@ export default function DemoToolbar() {
         </span>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <span style={{ fontSize: "11px", fontWeight: "700", letterSpacing: "0.5px", color: "#ffcc00", textTransform: "uppercase" }}>
-            Modo Demo SQLite
+            Modo Demo
           </span>
           <span style={{ fontSize: "10px", color: "#bda899" }}>
             {isAdmin ? "Panel Administrador" : "Tienda Cliente"}
@@ -180,7 +180,7 @@ export default function DemoToolbar() {
         title="Reiniciar base de datos a los valores iniciales"
       >
         <RotateCcw size={13} className={loading ? "animate-spin" : ""} />
-        <span>Reset Demo</span>
+        <span>Reset</span>
       </button>
 
       {/* Toggle minimizar */}

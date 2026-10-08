@@ -246,9 +246,9 @@ const App = () => {
       : "";
     const orderData = notaBeneficios
       ? {
-          ...deliveryData,
-          observaciones: [deliveryData.observaciones, notaBeneficios].filter(Boolean).join(" | "),
-        }
+        ...deliveryData,
+        observaciones: [deliveryData.observaciones, notaBeneficios].filter(Boolean).join(" | "),
+      }
       : deliveryData;
 
     if (deliveryData.telefono) {
@@ -454,149 +454,149 @@ const App = () => {
 
         {/* Tienda y catálogo público */}
         <Route
-        path="/*"
-        element={
-          <div
-            className="app-wrapper has-bottom-nav"
-            style={{
-              backgroundColor: design?.appBg && !design.appBg.includes("fff") && !design.appBg.includes("fdf") ? design.appBg : "#0d0805",
-              fontFamily: design?.fontFamily || "inherit",
-            }}
-          >
-            {settings.isActive === false && (
-              <div style={{ backgroundColor: "#d32f2f", color: "white", textAlign: "center", padding: "10px", fontWeight: "bold", fontSize: "0.9rem", zIndex: 1000, position: "relative" }}>
-                Estamos en mantenimiento o actualización. Pronto volveremos a recibir pedidos.
-              </div>
-            )}
-            <Hero
-              cartCount={cartCount}
-              onOpenCart={openCart}
-              estadoNegocio={estadoNegocio}
-              design={design}
-              products={products}
-              settings={settings}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onAddToCart={addToCart}
-              customer={customer}
-              onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
-              badgeLabel={mesaMode ? `Mesa ${mesa}` : ""}
-            />
-
-            <Menu
-              data={products}
-              categories={categories}
-              selectedProduct={selectedProduct}
-              setSelectedProduct={setSelectedProduct}
-              addToCart={addToCart}
-              design={design}
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              onOpenArmaModal={() => { setArmaEditItem(null); setIsArmaModalOpen(true); }}
-              settings={settings}
-              customer={customer}
-              badges={badges}
-              onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
-            />
-
-            <ScrollToTopButton />
-            <Footer settings={settings} design={design} />
-
-            <BottomNavigation
-              cartCount={cartCount}
-              onOpenCart={openCart}
-              whatsappNumber={whatsappNumber}
-              settings={settings}
-              customer={customer}
-              badges={badges}
-              onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
-              mesaMode={mesaMode}
-            />
-
-
-
-            <CartModal
-              cart={cart}
-              isOpen={isCartOpen}
-              onClose={closeCart}
-              onUpdateQuantity={updateQuantity}
-              onRemove={removeItemByStoreKey}
-              onEdit={editCartItem}
-              onAddOneMore={addOneMore}
-              onCheckout={openCheckout}
-              settings={settings}
-              checkoutLabel={mesaMode ? "Confirmar pedido" : undefined}
-            />
-
-            {productToCustomize && productToCustomize.tiempo_preparacion_horas > 0 ? (
-              <CakeScheduleModal
-                product={productToCustomize}
-                isOpen={isCustomizing}
-                onClose={closeCustomizationModal}
-                onConfirm={confirmCustomization}
-                settings={settings}
-              />
-            ) : (
-              <CustomizationModal
-                product={productToCustomize}
-                isOpen={isCustomizing}
-                onClose={closeCustomizationModal}
-                onConfirm={confirmCustomization}
-                settings={settings}
-              />
-            )}
-
-            <ArmaTuPaveModal
-              isOpen={isArmaModalOpen}
-              onClose={() => { setIsArmaModalOpen(false); setArmaEditItem(null); }}
-              settings={settings}
-              onAddToCart={addArmaToCart}
-              editItem={armaEditItem}
-            />
-
-
-            {mesaMode ? (
-              <LocalCheckoutModal
-                isOpen={isCheckoutOpen}
-                onClose={closeCheckout}
-                onConfirm={sendMesaOrder}
-                cart={cart}
-                title={`Pedido mesa ${mesa}`}
-                askName
-                submitting={enviandoMesa}
-              />
-            ) : (
-              <CheckoutModal
-                isOpen={isCheckoutOpen}
-                onClose={closeCheckout}
-                onConfirm={sendOrderToWhatsApp}
-                cart={cart}
-                settings={settings}
+          path="/*"
+          element={
+            <div
+              className="app-wrapper has-bottom-nav"
+              style={{
+                backgroundColor: design?.appBg && !design.appBg.includes("fff") && !design.appBg.includes("fdf") ? design.appBg : "#0d0805",
+                fontFamily: design?.fontFamily || "inherit",
+              }}
+            >
+              {settings.isActive === false && (
+                <div style={{ backgroundColor: "#d32f2f", color: "white", textAlign: "center", padding: "10px", fontWeight: "bold", fontSize: "0.9rem", zIndex: 1000, position: "relative" }}>
+                  Estamos en mantenimiento o actualización. Pronto volveremos a recibir pedidos.
+                </div>
+              )}
+              <Hero
+                cartCount={cartCount}
+                onOpenCart={openCart}
                 estadoNegocio={estadoNegocio}
-                badges={badges}
+                design={design}
+                products={products}
+                settings={settings}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onAddToCart={addToCart}
                 customer={customer}
+                onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
+                badgeLabel={mesaMode ? `Mesa ${mesa}` : ""}
               />
-            )}
 
-            <CustomerIdentifyModal
-              isOpen={isCustomerModalOpen && !mesaMode}
-              onClose={() => setIsCustomerModalOpen(false)}
-              onSaveCustomer={handleSaveCustomer}
-              currentCustomer={customer}
-              settings={settings}
-              badges={badges}
-            />
+              <Menu
+                data={products}
+                categories={categories}
+                selectedProduct={selectedProduct}
+                setSelectedProduct={setSelectedProduct}
+                addToCart={addToCart}
+                design={design}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                onOpenArmaModal={() => { setArmaEditItem(null); setIsArmaModalOpen(true); }}
+                settings={settings}
+                customer={customer}
+                badges={badges}
+                onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
+              />
 
-            <RatingModal
-              isOpen={isRatingOpen}
-              onClose={() => setIsRatingOpen(false)}
-              currentCustomer={customer}
-              settings={settings}
-            />
-          </div>
-        }
-      />
-    </Routes>
+              <ScrollToTopButton />
+              <Footer settings={settings} design={design} />
+
+              <BottomNavigation
+                cartCount={cartCount}
+                onOpenCart={openCart}
+                whatsappNumber={whatsappNumber}
+                settings={settings}
+                customer={customer}
+                badges={badges}
+                onOpenCustomerModal={() => setIsCustomerModalOpen(true)}
+                mesaMode={mesaMode}
+              />
+
+
+
+              <CartModal
+                cart={cart}
+                isOpen={isCartOpen}
+                onClose={closeCart}
+                onUpdateQuantity={updateQuantity}
+                onRemove={removeItemByStoreKey}
+                onEdit={editCartItem}
+                onAddOneMore={addOneMore}
+                onCheckout={openCheckout}
+                settings={settings}
+                checkoutLabel={mesaMode ? "Confirmar pedido" : undefined}
+              />
+
+              {productToCustomize && productToCustomize.tiempo_preparacion_horas > 0 ? (
+                <CakeScheduleModal
+                  product={productToCustomize}
+                  isOpen={isCustomizing}
+                  onClose={closeCustomizationModal}
+                  onConfirm={confirmCustomization}
+                  settings={settings}
+                />
+              ) : (
+                <CustomizationModal
+                  product={productToCustomize}
+                  isOpen={isCustomizing}
+                  onClose={closeCustomizationModal}
+                  onConfirm={confirmCustomization}
+                  settings={settings}
+                />
+              )}
+
+              <ArmaTuPaveModal
+                isOpen={isArmaModalOpen}
+                onClose={() => { setIsArmaModalOpen(false); setArmaEditItem(null); }}
+                settings={settings}
+                onAddToCart={addArmaToCart}
+                editItem={armaEditItem}
+              />
+
+
+              {mesaMode ? (
+                <LocalCheckoutModal
+                  isOpen={isCheckoutOpen}
+                  onClose={closeCheckout}
+                  onConfirm={sendMesaOrder}
+                  cart={cart}
+                  title={`Pedido mesa ${mesa}`}
+                  askName
+                  submitting={enviandoMesa}
+                />
+              ) : (
+                <CheckoutModal
+                  isOpen={isCheckoutOpen}
+                  onClose={closeCheckout}
+                  onConfirm={sendOrderToWhatsApp}
+                  cart={cart}
+                  settings={settings}
+                  estadoNegocio={estadoNegocio}
+                  badges={badges}
+                  customer={customer}
+                />
+              )}
+
+              <CustomerIdentifyModal
+                isOpen={isCustomerModalOpen && !mesaMode}
+                onClose={() => setIsCustomerModalOpen(false)}
+                onSaveCustomer={handleSaveCustomer}
+                currentCustomer={customer}
+                settings={settings}
+                badges={badges}
+              />
+
+              <RatingModal
+                isOpen={isRatingOpen}
+                onClose={() => setIsRatingOpen(false)}
+                currentCustomer={customer}
+                settings={settings}
+              />
+            </div>
+          }
+        />
+      </Routes>
     </>
   );
 };

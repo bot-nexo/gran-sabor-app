@@ -409,15 +409,16 @@ const CheckoutModal = ({
                       <Phone size={16} className="input-icon" />
                       <input type="tel" name="telefono" value={formData.telefono} onChange={handleChange} placeholder="Ej: 310 123 4567" required />
                     </div>
-                    <small className="input-hint"><FaWhatsapp style={{display: "inline", marginRight: "4px"}} color="#25D366" />Te contactaremos a este número para confirmar tu entrega.</small>
+                    <small className="input-hint"><FaWhatsapp style={{display: "inline", marginRight: "4px"}} color="#25D366" />💡 Ingresa tu WhatsApp para que te llegue el mensaje del pedido de prueba a tu chat.</small>
                   </div>
 
                   <div className="form-group full-width">
                     <label>Correo Electrónico *</label>
                     <div className="input-with-icon">
                       <MessageSquare size={16} className="input-icon" />
-                      <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Ej: correo@ejemplo.com" required />
+                      <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Ej: tu-correo@ejemplo.com" required />
                     </div>
+                    <small className="input-hint">📧 Te enviaremos el comprobante y las notificaciones por email a este correo para que pruebes cómo funciona.</small>
                   </div>
 
                   {esDomicilio && (
